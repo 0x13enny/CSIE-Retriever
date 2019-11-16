@@ -1,16 +1,35 @@
 <?xml version="1.0"?>
 <launch>
-    <param name="robot_description" command="$(find xacro)/xacro --inorder $(find csie-retriever_description)/robots/pioneer3dx.xacro" />
+
+  <arg name="rviz" default="true"/>
+  <arg name="rqt_steering" default="true"/>
+  <arg name="rvizconfig" default="$(find csie-retriever_gazebo)/rviz/csie-retriever.rviz" />
+ 
+
+
+  <param name="robot_description" command="$(find xacro)/xacro --inorder $(find csie-retriever_description)/robots/pioneer3dx.xacro" />
     
-    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
-	    <param name="publish_frequency" type="double" value="30.0"/>
-	    <param name="tf_prefix" type="string" value=""/>
- 	</node>
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+	<param name="publish_frequency" type="double" value="30.0"/>
+	<param name="tf_prefix" type="string" value=""/>
+   </node>
 
   
   <include file="$(find iceira_gazebo)/launch/iceira320.launch"/>
 
   <!-- push robot_description to factory and spawn robot in gazebo -->
   <node name="spawn_pioneer" pkg="gazebo_ros" type="spawn_model" args="-z 0.1 -urdf -param robot_description -model robot_description" respawn="false" output="screen" />
+
+  <group if="$(arg rqt_steering)">
+    <node name="rqt_robot_steering" pkg="rqt_robot_steering" type="rqt_robot_steering">
+      <param name="default_topic" value="/pioneer/cmd_vel"/>
+    </node>
+  </group>
+
+  <group if="$(arg rviz)">
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" />
+  </group>
+
+
 
 </launch>
