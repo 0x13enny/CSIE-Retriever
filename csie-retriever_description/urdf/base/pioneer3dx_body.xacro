@@ -2,7 +2,22 @@
 
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
-  <xacro:include filename="$(find p2os_urdf)/defs/pioneer3dx_wheel.xacro"/>
+  <xacro:include filename="$(find csie-retriever_description)/urdf/base/pioneer3dx_wheel.xacro"/>
+
+    <link name="base_footprint">
+        <visual>
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <geometry>
+            <box size="0.001 0.001 0.001" />
+          </geometry>
+        </visual>
+     </link>
+     <joint name="base_footprint_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <child link="base_link" />
+        <parent link="base_footprint"/>
+    </joint>
+
 
   <!-- Chassis description -->
   <link name="base_link">
@@ -226,6 +241,9 @@
   <gazebo>
     <!-- Robot locomotion plugin -->
 	<plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
+<!--      <robotNamespace>/retriever</robotNamespace>-->
+      <robotNamespace>/</robotNamespace>
+
       <legacyMode>false</legacyMode>
       <alwaysOn>true</alwaysOn>
 	  <updateRate>100.0</updateRate>
@@ -235,12 +253,11 @@
 	  <wheelDiameter>0.18</wheelDiameter>
 	  <wheelTorque>5</wheelTorque>
       <wheelAcceleration>0</wheelAcceleration>
-      <robotNamespace>pioneer</robotNamespace>
 	  <commandTopic>cmd_vel</commandTopic>
 	  <odometryTopic>odom</odometryTopic>
       <odometrySource>ENCODER</odometrySource><!--Other option is World-->
 	  <odometryFrame>odom</odometryFrame>
-      <robotBaseFrame>base_link</robotBaseFrame>
+      <robotBaseFrame>base_footprint</robotBaseFrame>
       <publishTf>1</publishTf>
       <publishWheelTF>false</publishWheelTF>
       <publishWheelJointState>false</publishWheelJointState>
