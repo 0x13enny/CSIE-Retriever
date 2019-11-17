@@ -4,25 +4,38 @@
   <arg name="rviz" default="true"/>
   <arg name="rqt_steering" default="true"/>
   <arg name="rvizconfig" default="$(find csie-retriever_gazebo)/rviz/csie-retriever.rviz" />
- 
+  <arg name="diffconfig" default="$(find csie-retriever_ros_control)/config/csie-retriever_ros_control_sim.yaml" />
+  <arg name="world_name" default="$(find ironfish_gazebo)/world/iceira302.world"/>
 
 
-  <param name="robot_description" command="$(find xacro)/xacro --inorder $(find csie-retriever_description)/robots/pioneer3dx.xacro" />
+
+  <param name="robot_description" command="python $(find xacro)/xacro.py $(find csie-retriever_description)/robots/pioneer3dx.xacro" />
     
-  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
-	<param name="publish_frequency" type="double" value="30.0"/>
-	<param name="tf_prefix" type="string" value=""/>
-   </node>
+  <!--Load controller parameter-->
+  <rosparam command="load" file="$(arg diffconfig)"/>
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+     <arg name="world_name" default="$(arg world_name)"/>
+  </include>
 
-  
-  <include file="$(find iceira_gazebo)/launch/iceira320.launch"/>
 
   <!-- push robot_description to factory and spawn robot in gazebo -->
   <node name="spawn_pioneer" pkg="gazebo_ros" type="spawn_model" args="-z 0.1 -urdf -param robot_description -model robot_description" respawn="false" output="screen" />
 
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+    <param name="publish_frequency" type="double" value="30.0"/>
+    <param name="tf_prefix" type="string" value=""/>
+  </node>
+
+
+  <node name="retriever_joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
+
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+    args="retriever_joint_state_controller
+    	  retriever_diff_drive_controller"/>
+
   <group if="$(arg rqt_steering)">
     <node name="rqt_robot_steering" pkg="rqt_robot_steering" type="rqt_robot_steering">
-      <param name="default_topic" value="/pioneer/cmd_vel"/>
+      <param name="default_topic" value="/cmd_vel"/>
     </node>
   </group>
 
