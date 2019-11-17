@@ -5,7 +5,7 @@
   <arg name="rqt_steering" default="true"/>
   <arg name="rvizconfig" default="$(find csie-retriever_gazebo)/rviz/csie-retriever.rviz" />
   <arg name="diffconfig" default="$(find csie-retriever_ros_control)/config/csie-retriever_ros_control_sim.yaml" />
-  <arg name="world_name" default="$(find ironfish_gazebo)/world/iceira302.world"/>
+  <arg name="world_name" default="$(find csie-retriever_gazebo)/world/iceira302.world"/>
 
 
 
