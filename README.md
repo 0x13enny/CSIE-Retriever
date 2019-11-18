@@ -3,11 +3,19 @@ Final Project of Robotics 2019 Fall Semester.
 
 ## Prerequisites
 
+install required ros packages
 ```
-sudo apt-get install ros-kinetic-p2os-driver ros-kinetic-p2os-teleop ros-kinetic-p2os-launch ros-kinetic-p2os-urdf
+rosdep install --from-paths src --ignore-src --rosdistro kinetic -y
+```
 
-sudo apt install ros-kinetic-openslam-gmapping
-sudo apt install ros-kinetic-slam-gmapping
-sudo apt install ros-kinetic-teb-local-planner
+## Usage
 
+steering in simulation world
+```
+roslaunch csie-retriever_gazebo csie-retriever.gazebo.launch 
+```
+
+steering, navigation and gmapping(SLAM) integration in simulation world
+```
+roslaunch csie-retriever_navigation csie-retriever_nav_gmapping.launch
 ```
