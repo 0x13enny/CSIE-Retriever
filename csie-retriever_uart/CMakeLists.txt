@@ -120,9 +120,7 @@ include_directories(
 )
 
 ## Declare a C++ library
- add_library(csie-retriever_uart
-   src/csie-retriever_uart.cpp
- )
+add_library(csie-retriever_uart src/csie-retriever_uart.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
