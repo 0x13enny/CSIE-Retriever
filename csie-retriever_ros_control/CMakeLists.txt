@@ -14,7 +14,22 @@ find_package(catkin REQUIRED COMPONENTS
   joint_state_controller
   roscpp
   transmission_interface
+  csie-retriever_uart
 )
+
+
+# check c++11 / c++0x
+include(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+if(COMPILER_SUPPORTS_CXX11)
+    set(CMAKE_CXX_FLAGS "-std=c++11")
+elseif(COMPILER_SUPPORTS_CXX0X)
+    set(CMAKE_CXX_FLAGS "-std=c++0x")
+else()
+    message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+endif()
+
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -106,10 +121,18 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
+  INCLUDE_DIRS include
 #  LIBRARIES csie-retriever_ros_control
 #  CATKIN_DEPENDS controller_manager diff_drive_controller hardware_interface joint_state_controller roscpp tranmission_interface
 #  DEPENDS system_lib
+  CATKIN_DEPENDS roscpp
+  controller_manager
+  hardware_interface
+  transmission_interface
+  diff_drive_controller
+  joint_state_controller
+  csie-retriever_uart
+
 )
 
 ###########
@@ -119,14 +142,34 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/csie-retriever_ros_control.cpp
-# )
+add_library(csie-retriever
+   src/hardware.cpp
+   src/transmission.cpp
+   src/hardware_transmission_interface.cpp
+ )
+target_link_libraries(csie-retriever
+  ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES}
+)
+
+
+ add_executable(csie-retriever_ros_control
+ src/retriever_ros_control.cpp
+ )
+
+target_link_libraries(csie-retriever_ros_control
+  csie-retriever
+  ${catkin_LIBRARIES}
+  ${Boost_LIBRARIES}
+)
+
+
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -175,18 +218,20 @@ include_directories(
 
 ## Mark libraries for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
-# install(TARGETS ${PROJECT_NAME}
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
-# )
-
 ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
+
+install(TARGETS csie-retriever_ros_control csie-retriever
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+
+ install(
+   DIRECTORY config launch rviz
+   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 #   PATTERN ".svn" EXCLUDE
-# )
+ )
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
