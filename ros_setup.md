@@ -8,6 +8,7 @@ sudo apt-get update
 sudo apt-get install ros-kinetic-desktop-full
 sudo apt install python-rosinstall python-rosinstall-generator python-wstool build-essential
 sudo apt-get install ros-kinetic-p2os-driver ros-kinetic-p2os-teleop ros-kinetic-p2os-launch ros-kinetic-p2os-urdf
+sudo apt-get install ros-kinetic-teb-local-planner
 ```
 
 # init
