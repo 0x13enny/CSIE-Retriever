@@ -1,12 +1,13 @@
+<?xml version="1.0"?>
 <launch>
   <node name="urg_node" pkg="urg_node" type="urg_node" output="screen">
-    <param name="frame_id" value="/hokuyo_link"/>
+    <param name="frame_id" value="/laser_link"/>
     <param name="serial_port" value="/dev/ttyACM0"/>
     <param name="angle_min" value="-1.57"/>
     <param name="angle_max" value="1.57"/>
   </node>
   <node name="urg_back_node" pkg="urg_node" type="urg_node" output="screen">
-    <param name="frame_id" value="/hokuyo_back_link"/>
+    <param name="frame_id" value="/laser_back_link"/>
     <param name="serial_port" value="/dev/ttyACM1"/>
     <param name="angle_min" value="-1.57"/>
     <param name="angle_max" value="1.57"/>

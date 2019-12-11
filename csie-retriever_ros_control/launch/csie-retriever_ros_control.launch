@@ -12,6 +12,11 @@
 
   <!--Load controller parameter-->
   <rosparam command="load" file="$(arg diffconfig)"/>
+  
+  <!--communicate with robot by serial port using ROSARIA-->
+  <!--Main control-->
+  <node name="aria_controller" pkg="rosaria" type="RosAria"
+    _port="/dev/ttyUSB0"/>
 
   <!--Spawn Controller-->
   <node name="diff_controller_spawner" pkg="controller_manager" type="spawner"
@@ -19,8 +24,8 @@
           retriever_diff_drive_controller"/>
 
   <!--Main control node-->
-  <node name="retriever_ros_control" pkg="retriever_ros_control" type="retriever_ros_control"
-    output="log" respawn="true" respawn_delay="3"/>
+  <!--<node name="retriever_ros_control" pkg="retriever_ros_control" type="retriever_ros_control"
+    output="log" respawn="true" respawn_delay="3"/>-->
 
   <!--Publish robot state-->
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
