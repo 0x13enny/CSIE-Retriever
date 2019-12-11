@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # license removed for brevity
 import rospy
 from std_msgs.msg import String
@@ -235,15 +235,18 @@ if __name__ == '__main__':
                         help="Path to the language model trie file created with native_client/generate_trie. Default: trie")
     parser.add_argument('-d', '--device', type=int, default=None,
                         help="Device input index (Int) as listed by pyaudio.PyAudio.get_device_info_by_index(). If not provided, falls back to PyAudio.get_default_device().")
-    parser.add_argument('-r', '--rate', type=int, default=DEFAULT_SAMPLE_RATE,
-                        help=f"Input device sample rate. Default: {DEFAULT_SAMPLE_RATE}. Your device may require 44100.")
-    parser.add_argument('-la', '--lm_alpha', type=float, default=LM_ALPHA,
-                        help=f"The alpha hyperparameter of the CTC decoder. Language Model weight. Default: {LM_ALPHA}")
-    parser.add_argument('-lb', '--lm_beta', type=float, default=LM_BETA,
-                        help=f"The beta hyperparameter of the CTC decoder. Word insertion bonus. Default: {LM_BETA}")
-    parser.add_argument('-bw', '--beam_width', type=int, default=BEAM_WIDTH,
-                        help=f"Beam width used in the CTC decoder when building candidate transcriptions. Default: {BEAM_WIDTH}")
+    parser.add_argument('-r', '--rate', type=int, default=DEFAULT_SAMPLE_RATE)#,
+                       # help=f"Input device sample rate. Default: {DEFAULT_SAMPLE_RATE}. Your device may require 44100.")
+    parser.add_argument('-la', '--lm_alpha', type=float, default=LM_ALPHA)#,
+                       # help=f"The alpha hyperparameter of the CTC decoder. Language Model weight. Default: {LM_ALPHA}")
+    parser.add_argument('-lb', '--lm_beta', type=float, default=LM_BETA)#,
+                       # help=f"The beta hyperparameter of the CTC decoder. Word insertion bonus. Default: {LM_BETA}")
+    parser.add_argument('-bw', '--beam_width', type=int, default=BEAM_WIDTH)#,
+                       # help=f"Beam width used in the CTC decoder when building candidate transcriptions. Default: {BEAM_WIDTH}")
 
     ARGS = parser.parse_args()
+    print(ARGS.lm)
+    print(ARGS.trie)
     if ARGS.savewav: os.makedirs(ARGS.savewav, exist_ok=True)
+
     main(ARGS)
