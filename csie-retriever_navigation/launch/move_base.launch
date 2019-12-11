@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
   <!--planner args-->
   <arg name="dual_scan" default="true"/>
@@ -18,8 +19,8 @@
 
   <!-- main : move_base node-->
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
-    <remap from="cmd_vel" to="/pioneer/cmd_vel"/>
-    <remap from="odom" to="/pioneer/odom"/>
+    <remap from="cmd_vel" to="/cmd_vel"/>
+    <remap from="odom" to="/odom"/>
 
     <!--decise global/local planner-->
     <param name="controller_frequency" value="10.0"/>

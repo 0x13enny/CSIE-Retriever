@@ -14,7 +14,8 @@
   <!--Load controller parameter-->
   <rosparam command="load" file="$(arg diffconfig)"/>
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-     <arg name="world_name" default="$(arg world_name)"/>
+   <arg name="world_name" default="$(arg world_name)"/>
+     
   </include>
 
 

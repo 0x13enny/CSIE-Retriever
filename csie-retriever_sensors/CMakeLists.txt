@@ -10,7 +10,6 @@ project(csie-retriever_sensors)
 find_package(catkin REQUIRED COMPONENTS
   openni_launch
   razor_imu_9dof
-  realsense2_camera
   urg_node
 )
 

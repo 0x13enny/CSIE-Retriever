@@ -12,6 +12,9 @@
   <hokuyo_utm30lx parent="base_link" name="laser">
     <origin xyz="0.02 0 0.4" rpy="0 0 0"/>
   </hokuyo_utm30lx>
+  <hokuyo_utm30lx_back parent="base_link" name="laser_back">
+    <origin xyz="-0.1 0 0.4" rpy="0 0 ${pi}"/>
+  </hokuyo_utm30lx_back>
 
 
 </robot>
