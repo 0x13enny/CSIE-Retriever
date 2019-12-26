@@ -11,6 +11,8 @@
 #include "retriever_speech/user_info.h"
 #define THRESHOLD 10000
 
+using namespace std;
+
 enum State {
   MapConstruction, 
   Patrol,
