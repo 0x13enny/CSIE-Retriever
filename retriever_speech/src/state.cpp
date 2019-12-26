@@ -143,27 +143,27 @@ void listen_to_people(const std_msgs::String::ConstPtr& msg) {
       return;
     } 
 
-    if (!strcmp(msg, "bathroom")) {
+    if (!strcmp(msg->data.c_str(), "bathroom")) {
       current_target = targetMap.find(bathroom);
       current_state = HelpPeople;
       current_user.target = bathroom;
-    } else if (!strcmp(msg, "water_dispenser")) {
+    } else if (!strcmp(msg->data.c_str(), "water_dispenser")) {
       current_target = targetMap.find(water_dispenser);
       current_state = HelpPeople;
       current_user.target = water_dispenser;
-    } else if (!strcmp(msg, "stairs")) {
+    } else if (!strcmp(msg->data.c_str(), "stairs")) {
       current_target = targetMap.find(stairs);
       current_state = HelpPeople;
       current_user.target = stairs;
-    } else if (!strcmp(msg, "elevator")) {
+    } else if (!strcmp(msg->data.c_str(), "elevator")) {
       current_target = targetMap.find(elevator);
       current_state = HelpPeople;
       current_user.target = elevator;
-    } else if (!strcmp(msg, "stop")) {
+    } else if (!strcmp(msg->data.c_str(), "stop")) {
       current_target = targetMap.find(stop);
       current_state = HelpPeople;
       current_user.target = stop;
-    } else if (!strcmp(msg, "guide")) {
+    } else if (!strcmp(msg->data.c_str(), "guide")) {
       find_plan();
       current_state = GuidePeople;
       current_user.target = guide;
