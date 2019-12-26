@@ -100,15 +100,15 @@ void last_see_people(const retriever_speech::user_info::ConstPtr& msg) {
 void hear_find_target_Callback(const std_msgs::String::ConstPtr& msg) {
   if (current_state != MapConstruction) return;
   if (!strcmp(msg->data.c_str(), "bathroom")) {
-    targetMap.insert(bathroom, current_pose);
+    targetMap[bathroom] = current_pose;
   } else if (!strcmp(msg->data.c_str(), "water_dispenser")) {
-    targetMap.insert(water_dispenser, current_pose);
+    targetMap[water_dispenser] = current_pose;
   } else if (!strcmp(msg->data.c_str(), "stairs")) {
-    targetMap.insert(stairs, current_pose);
+    targetMap[stairs] = current_pose;
   } else if (!strcmp(msg->data.c_str(), "elevator")) {
-    targetMap.insert(elevator, current_pose);
+    targetMap[elevator] = current_pose;
   } else if (!strcmp(msg->data.c_str(), "stop")) {
-    targetMap.insert(stop, current_pose);
+    targetMap[stop] = current_pose;
   }
 }
 
@@ -277,10 +277,10 @@ int main(int argc, char **argv) {
         } 
         if (timeOutCount == 0) {
           move_base_msgs::MoveBaseActionGoal message;
-          s.goal.target_pose.pose.position.x = current_pose.x + (double) 10* rand() / (RAND_MAX + 1.0);
-          s.goal.target_pose.pose.position.y = current_pose.y + (double) 10* rand() / (RAND_MAX + 1.0);
-          s.goal.target_pose.pose.orientation.z = current_pose.rx + (double) 10* rand() / (RAND_MAX + 1.0);
-          s.goal.target_pose.pose.orientation.w = current_pose.ry + (double) 10* rand() / (RAND_MAX + 1.0);
+          message.goal.target_pose.pose.position.x = current_pose.x + (double) 10* rand() / (RAND_MAX + 1.0);
+          message.goal.target_pose.pose.position.y = current_pose.y + (double) 10* rand() / (RAND_MAX + 1.0);
+          message.goal.target_pose.pose.orientation.z = current_pose.rx + (double) 10* rand() / (RAND_MAX + 1.0);
+          message.goal.target_pose.pose.orientation.w = current_pose.ry + (double) 10* rand() / (RAND_MAX + 1.0);
           go_to_target.publish(message);
         }
         timeOutCount++;
