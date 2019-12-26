@@ -58,11 +58,12 @@ ros::Publisher go_to_target;
 ros::Publisher cancel;
 
 void tts(string s) {
-
+  ;
 }
 
 void find_plan() {
   // find route based on current position
+  ;
 }
 
 /*
@@ -263,8 +264,7 @@ int main(int argc, char **argv) {
       current_state = Patrol;
     }
 
-    switch (current_state):
-
+    switch (current_state) {
       Patrol:
         // random move around;
         if (timeOutCount > 50) {
@@ -288,7 +288,7 @@ int main(int argc, char **argv) {
           break;
         }
         if (timeOutCount % 10 == 0) {
-          tts("Are you going to " + user.target + "?");
+          tts("Are you going to ?");
         }
         timeOutCount++;
       HelpingWhileWaitForPerson:
@@ -315,6 +315,7 @@ int main(int argc, char **argv) {
         timeOutCount++;
       default:
         break;
+    }
   }
 
   return 0;
