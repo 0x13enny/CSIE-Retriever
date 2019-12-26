@@ -87,13 +87,6 @@ void last_see_people(const std_msgs::String::ConstPtr& msg) {
   Map Construction callback
  */
 
-// finish map construction
-void finish_construction_Callback(const std_msgs::String::ConstPtr& msg) {
-  if (current_state != MapConstruction) return;
-  if (!strcmp(msg->data.c_str(), "finish construction")) {
-    current_state = Patrol;
-  } 
-}
 
 // find some targets
 void hear_find_target_Callback(const std_msgs::String::ConstPtr& msg) {
@@ -168,12 +161,13 @@ void listen_to_people(const std_msgs::String::ConstPtr& msg) {
       current_user.target = guide;
     }
 
-    if (current_target == HelpPeople || current_state == GuidePeople) {
+    if (current_state == HelpPeople || current_state == GuidePeople) {
       // pub 
-      std_msgs::String message;
-      std::stringstream ss;
-      ss << current_target.x << current_target.y << current_target.rx << current_target.ry;
-      message.data = ss.str();
+      move_base_msgs::MoveBaseActionGoal message;
+      s.goal.target_pose.pose.position.x = current_user.x;
+      s.goal.target_pose.pose.position.y = current_user.y;
+      s.goal.target_pose.pose.orientation.z = current_user.rx;
+      s.goal.target_pose.pose.orientation.w = current_user.ry;
       go_to_target.publish(message);
     }
     
@@ -199,12 +193,12 @@ void helping_people(const std_msgs::String::ConstPtr& msg) {
     }
 
     // control the speed
-    move_base_msgs::MoveBaseActionGoal message;
-    s.goal.target_pose.pose.position.x = current_user.x;
-    s.goal.target_pose.pose.position.y = current_user.y;
-    s.goal.target_pose.pose.orientation.z = current_user.rx;
-    s.goal.target_pose.pose.orientation.w = current_user.ry;
-    go_to_target.publish(message);
+    // move_base_msgs::MoveBaseActionGoal message;
+    // s.goal.target_pose.pose.position.x = current_user.x;
+    // s.goal.target_pose.pose.position.y = current_user.y;
+    // s.goal.target_pose.pose.orientation.z = current_user.rx;
+    // s.goal.target_pose.pose.orientation.w = current_user.ry;
+    // go_to_target.publish(message);
   }
 }
 
@@ -228,6 +222,9 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, "state");
 
   srand( time(NULL) );
+
+  bool finished;
+  
   go_to_target = n.advertise<std_msgs::String>("/move_base/goal", 1000);
   ros::Rate loop_rate(10);
 
@@ -237,7 +234,7 @@ int main(int argc, char **argv) {
   ros::Subscriber sub2 = n.subscribe("/last_see_people", 1000, last_see_people);
   ros::Subscriber sub3 = n.subscribe("/last_see_people", 1000, helping_people);
   ros::Subscriber sub4 = n.subscribe("/last_see_people", 1000, wait_helping_people);
-  ros::Subscriber sub5 = n.subscribe("/finish_construction_Callback", 1000, finish_construction_Callback);
+  ros::Subscriber sub5 = n.subscribe("/finish_construction", 1000, finish_construction_Callback);
   ros::Subscriber sub6 = n.subscribe("/hear_find_target_Callback", 1000, hear_find_target_Callback);
   ros::Subscriber sub7 = n.subscribe("/listen_to_people", 1000, listen_to_people);
   
@@ -246,7 +243,13 @@ int main(int argc, char **argv) {
 
     loop_rate.sleep();
 
+    ros::param::get("finish_construction", finished);
+    if (finished) {
+      current_state = Patrol;
+    }
+
     switch (current_state):
+
       Patrol:
         // random move around;
         if (timeOutCount < 50) {
