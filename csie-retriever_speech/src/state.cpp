@@ -266,21 +266,20 @@ int main(int argc, char **argv) {
 
       Patrol:
         // random move around;
-        /*if (timeOutCount > 50) {
+        if (timeOutCount > 50) {
           actionlib_msgs::GoalID temp;
           cancel.publish(temp);
           timeOutCount = 0;
-          continue;
         } 
-
-        move_base_msgs::MoveBaseActionGoal message;
-        s.goal.target_pose.pose.position.x = current_pose.x + (double) 10* rand() / (RAND_MAX + 1.0);
-        s.goal.target_pose.pose.position.y = current_pose.y + (double) 10* rand() / (RAND_MAX + 1.0);
-        s.goal.target_pose.pose.orientation.z = current_pose.rx + (double) 10* rand() / (RAND_MAX + 1.0);
-        s.goal.target_pose.pose.orientation.w = current_pose.ry + (double) 10* rand() / (RAND_MAX + 1.0);
-        go_to_target.publish(message);*/
-        // timeOutCount = 0;
-
+        if (timeOutCount == 0) {
+          move_base_msgs::MoveBaseActionGoal message;
+          s.goal.target_pose.pose.position.x = current_pose.x + (double) 10* rand() / (RAND_MAX + 1.0);
+          s.goal.target_pose.pose.position.y = current_pose.y + (double) 10* rand() / (RAND_MAX + 1.0);
+          s.goal.target_pose.pose.orientation.z = current_pose.rx + (double) 10* rand() / (RAND_MAX + 1.0);
+          s.goal.target_pose.pose.orientation.w = current_pose.ry + (double) 10* rand() / (RAND_MAX + 1.0);
+          go_to_target.publish(message);
+        }
+        timeOutCount++;
       WaitForReplyWhilePatrol:
         if (timeOutCount > 50) {
           timeOutCount = 0;
