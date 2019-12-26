@@ -216,11 +216,12 @@ void wait_helping_people(const std_msgs::String::ConstPtr& msg) {
   if (current_user.face > THRESHOLD && current_user.id == current_wait_user.id) {
     current_state = HelpPeople;
     timeOutCount = 0;
+    current_target = targetMap.find(current_user.target);
     move_base_msgs::MoveBaseActionGoal message;
-    s.goal.target_pose.pose.position.x = current_user.x;
-    s.goal.target_pose.pose.position.y = current_user.y;
-    s.goal.target_pose.pose.orientation.z = current_user.rx;
-    s.goal.target_pose.pose.orientation.w = current_user.ry;
+    s.goal.target_pose.pose.position.x = current_target.x;
+    s.goal.target_pose.pose.position.y = current_target.y;
+    s.goal.target_pose.pose.orientation.z = current_target.rx;
+    s.goal.target_pose.pose.orientation.w = current_target.ry;
     go_to_target.publish(message);
   }
 }
