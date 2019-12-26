@@ -3,6 +3,7 @@
 #include <time.h> 
 #include <chrono>
 #include <sstream>
+#include <map>
 #include <string>
 #include "move_base_msgs/MoveBaseActionGoal.h"
 #include "nav_msgs/Odometry.h"
@@ -36,7 +37,7 @@ typedef struct {
 } P;
 
 typedef struct {
-  std::chrono::time_point<std::chrono::system_clock> ts;
+  // std::chrono::time_point<std::chrono::system_clock> ts;
   int id;
   int face;
   Place target;
@@ -46,10 +47,10 @@ typedef struct {
 int current_state = MapConstruction;
 int current_target_place = -1;
 int timeOutCount = 0;
-P current_pose;
-P current_target;
-U current_wait_user;
-U current_user;
+P current_pose = { 0, 0, 0, 0 };
+P current_target = { 0, 0, 0, 0 };
+U current_wait_user = { 0, 0, 0 };
+U current_user = { 0, 0, 0 };
 map<int, U> lost_user; 
 map<Place, P> targetMap;
 vector<P> route;
@@ -82,7 +83,7 @@ void hear_current_pose(const nav_msgs::Odometry::ConstPtr& msg) {
 
 // keep track of person saw
 void last_see_people(const retriever_speech::user_info::ConstPtr& msg) {
-  current_user.ts = std::chrono::system_clock::now();
+  //current_user.ts = std::chrono::system_clock::now();
   current_user.id = msg.user_id;
   current_user.face = msg.face_area;
 }
@@ -214,7 +215,7 @@ void helping_people(const retriever_speech::user_info::ConstPtr& msg) {
  */
 
 void wait_helping_people(const retriever_speech::user_info::ConstPtr& msg) {
-  if (msg.face > THRESHOLD && msg.id == current_wait_user.id) {
+  if (msg.face_area > THRESHOLD && msg.user_id == current_wait_user.id) {
     current_state = HelpPeople;
     timeOutCount = 0;
     current_target = targetMap.find(current_user.target);
