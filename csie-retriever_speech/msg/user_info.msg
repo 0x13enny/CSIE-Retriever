@@ -1,2 +1,2 @@
-int32 x
-int32 y
+int32 face_area
+int32 user_id

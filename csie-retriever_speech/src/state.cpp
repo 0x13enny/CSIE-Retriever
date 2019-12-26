@@ -7,6 +7,7 @@
 #include "move_base_msgs/MoveBaseActionGoal.h"
 #include "nav_msgs/Odometry.h"
 #include "actionlib_msgs/GoalID.h"
+#define THRESHOLD 10000
 
 enum State {
   MapConstruction, 
@@ -79,10 +80,10 @@ void hear_current_pose(const nav_msgs::Odometry::ConstPtr& msg) {
 }
 
 // keep track of person saw
-void last_see_people(const std_msgs::String::ConstPtr& msg) {
+void last_see_people(const csie-retriever_speech::user_info::ConstPtr& msg) {
   current_user.ts = std::chrono::system_clock::now();
-  current_user.id = msg.user_num;
-  current_user.face = msg.face;
+  current_user.id = msg.user_id;
+  current_user.face = msg.face_area;
 }
 
 /*
@@ -180,9 +181,9 @@ void listen_to_people(const std_msgs::String::ConstPtr& msg) {
   HelpPeople callback
  */
 
-void helping_people(const std_msgs::String::ConstPtr& msg) {
+void helping_people(const csie-retriever_speech::user_info::ConstPtr& msg) {
   if (current_state == GuidePeople) {
-    if (current_user.face < THRESHOLD) {
+    if (msg.face_area < THRESHOLD) {
       current_state = HelpingWhileWaitForPerson;
       current_wait_user = current_user;
       actionlib_msgs::GoalID temp;
@@ -212,8 +213,8 @@ void helping_people(const std_msgs::String::ConstPtr& msg) {
   HelpingWhileWaitForPerson callback
  */
 
-void wait_helping_people(const std_msgs::String::ConstPtr& msg) {
-  if (current_user.face > THRESHOLD && current_user.id == current_wait_user.id) {
+void wait_helping_people(const csie-retriever_speech::user_info::ConstPtr& msg) {
+  if (msg.face > THRESHOLD && msg.id == current_wait_user.id) {
     current_state = HelpPeople;
     timeOutCount = 0;
     current_target = targetMap.find(current_user.target);
