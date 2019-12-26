@@ -4,6 +4,8 @@
 #include <chrono>
 #include <sstream>
 #include <string>
+#include "move_base_msgs/MoveBaseActionGoal.h"
+#include "nav_msgs/Odometry.h"
 
 enum State {
   MapConstruction, 
@@ -25,10 +27,10 @@ enum Place {
 }
 
 typedef struct {
-  int x;
-  int y;
-  int rx;
-  int ry;
+  double x;
+  double y;
+  double rx;
+  double ry;
 } P;
 
 typedef struct {
@@ -65,13 +67,13 @@ void find_plan() {
  */
 
 // keep track of current position
-void hear_current_pose(const std_msgs::String::ConstPtr& msg) {
+void hear_current_pose(const nav_msgs::Odometry::ConstPtr& msg) {
   if (current_state == HelpPeople || current_state == GuidePeople 
     || current_state == WaitForReplyWhilePatrol) return;
-  current_pose.x = msg.x;
-  current_pose.y = msg.y;
-  current_pose.rx = msg.rx;
-  current_pose.ry = msg.ry;
+  current_pose.x = msg.pose.pose.position.x;
+  current_pose.y = msg.pose.pose.position.y;
+  current_pose.rx = msg.pose.pose.orientation.z;
+  current_pose.ry = msg.pose.pose.orientation.w;
 }
 
 // keep track of person saw
@@ -197,10 +199,11 @@ void helping_people(const std_msgs::String::ConstPtr& msg) {
     }
 
     // control the speed
-    std_msgs::String message;
-    std::stringstream ss;
-    ss << 1./current_user.face;
-    message.data = ss.str();
+    move_base_msgs::MoveBaseActionGoal message;
+    s.goal.target_pose.pose.position.x = current_user.x;
+    s.goal.target_pose.pose.position.y = current_user.y;
+    s.goal.target_pose.pose.orientation.z = current_user.rx;
+    s.goal.target_pose.pose.orientation.w = current_user.ry;
     go_to_target.publish(message);
   }
 }
@@ -225,18 +228,18 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, "state");
 
   srand( time(NULL) );
-  go_to_target = n.advertise<std_msgs::String>("go_to_target", 1000);
+  go_to_target = n.advertise<std_msgs::String>("/move_base/goal", 1000);
   ros::Rate loop_rate(10);
 
   int count = 0;
 
-  ros::Subscriber sub1 = n.subscribe("hear_current_pose", 1000, hear_current_pose);
-  ros::Subscriber sub2 = n.subscribe("last_see_people", 1000, last_see_people);
-  ros::Subscriber sub3 = n.subscribe("last_see_people", 1000, helping_people);
-  ros::Subscriber sub4 = n.subscribe("last_see_people", 1000, wait_helping_people);
-  ros::Subscriber sub5 = n.subscribe("finish_construction_Callback", 1000, finish_construction_Callback);
-  ros::Subscriber sub6 = n.subscribe("hear_find_target_Callback", 1000, hear_find_target_Callback);
-  ros::Subscriber sub7 = n.subscribe("listen_to_people", 1000, listen_to_people);
+  ros::Subscriber sub1 = n.subscribe("/odom", 1000, hear_current_pose);
+  ros::Subscriber sub2 = n.subscribe("/last_see_people", 1000, last_see_people);
+  ros::Subscriber sub3 = n.subscribe("/last_see_people", 1000, helping_people);
+  ros::Subscriber sub4 = n.subscribe("/last_see_people", 1000, wait_helping_people);
+  ros::Subscriber sub5 = n.subscribe("/finish_construction_Callback", 1000, finish_construction_Callback);
+  ros::Subscriber sub6 = n.subscribe("/hear_find_target_Callback", 1000, hear_find_target_Callback);
+  ros::Subscriber sub7 = n.subscribe("/listen_to_people", 1000, listen_to_people);
   
   while (ros::ok()) {
     ros::spinOnce();
