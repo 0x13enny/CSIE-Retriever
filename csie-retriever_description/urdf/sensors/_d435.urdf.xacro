@@ -79,7 +79,7 @@ aluminum peripherial evaluation case.
       <sensor name="camera" type="depth">
         <update_rate>20</update_rate>
         <camera>
-          <horizontal_fov>1.047198</horizontal_fov>
+          <horizontal_fov>1.347198</horizontal_fov>
           <image>
             <width>640</width>
             <height>480</height>
@@ -87,7 +87,7 @@ aluminum peripherial evaluation case.
           </image>
           <clip>
             <near>0.05</near>
-            <far>3</far>
+            <far>8</far>
           </clip>
         </camera>
       </sensor>
@@ -103,7 +103,10 @@ aluminum peripherial evaluation case.
     <link name="camera_depth_frame"/>
 
     <joint name="camera_depth_optical_joint" type="fixed">
-      <origin xyz="0 0 0" rpy="${-M_PI/2} 0 ${-M_PI/2}" />
+      <!--original setting-->
+      <!--<origin xyz="0 0 0" rpy="${-M_PI/2} 0 ${-M_PI/2}" />-->
+      <!--modified for retiever-->
+      <origin xyz="0 0 0" rpy="${-M_PI/2} 0 0"/>
       <parent link="camera_depth_frame" />
       <child link="camera_depth_optical_frame" />
     </joint>
