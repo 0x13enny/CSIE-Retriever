@@ -185,12 +185,16 @@ void helping_people(const std_msgs::String::ConstPtr& msg) {
     if (current_user.face < THRESHOLD) {
       current_state = HelpingWhileWaitForPerson;
       current_wait_user = current_user;
+      actionlib_msgs::GoalID temp;
+      cancel.publish(temp);    
       return;
     }
 
     if (reach_target) {
       tts("we reached " + current_user.target);
       current_state = Patrol;
+      actionlib_msgs::GoalID temp;
+      cancel.publish(temp);    
       return;
     }
 
@@ -212,6 +216,12 @@ void wait_helping_people(const std_msgs::String::ConstPtr& msg) {
   if (current_user.face > THRESHOLD && current_user.id == current_wait_user.id) {
     current_state = HelpPeople;
     timeOutCount = 0;
+    move_base_msgs::MoveBaseActionGoal message;
+    s.goal.target_pose.pose.position.x = current_user.x;
+    s.goal.target_pose.pose.position.y = current_user.y;
+    s.goal.target_pose.pose.orientation.z = current_user.rx;
+    s.goal.target_pose.pose.orientation.w = current_user.ry;
+    go_to_target.publish(message);
   }
 }
 
@@ -256,19 +266,20 @@ int main(int argc, char **argv) {
 
       Patrol:
         // random move around;
-        if (timeOutCount < 50) {
+        /*if (timeOutCount > 50) {
           actionlib_msgs::GoalID temp;
           cancel.publish(temp);
-          timeOutCount++;
+          timeOutCount = 0;
           continue;
-        }
+        } 
+
         move_base_msgs::MoveBaseActionGoal message;
         s.goal.target_pose.pose.position.x = current_pose.x + (double) 10* rand() / (RAND_MAX + 1.0);
         s.goal.target_pose.pose.position.y = current_pose.y + (double) 10* rand() / (RAND_MAX + 1.0);
         s.goal.target_pose.pose.orientation.z = current_pose.rx + (double) 10* rand() / (RAND_MAX + 1.0);
         s.goal.target_pose.pose.orientation.w = current_pose.ry + (double) 10* rand() / (RAND_MAX + 1.0);
-        go_to_target.publish(message);
-        timeOutCount = 0;
+        go_to_target.publish(message);*/
+        // timeOutCount = 0;
 
       WaitForReplyWhilePatrol:
         if (timeOutCount > 50) {
