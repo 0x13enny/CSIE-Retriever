@@ -6,6 +6,7 @@
 #include <string>
 #include "move_base_msgs/MoveBaseActionGoal.h"
 #include "nav_msgs/Odometry.h"
+#include "actionlib_msgs/GoalID.h"
 
 enum State {
   MapConstruction, 
@@ -53,6 +54,7 @@ map<Place, P> targetMap;
 vector<P> route;
 ros::NodeHandle n;
 ros::Publisher go_to_target;
+ros::Publisher cancel;
 
 void tts(string s) {
 
@@ -226,6 +228,8 @@ int main(int argc, char **argv) {
   bool finished;
   
   go_to_target = n.advertise<std_msgs::String>("/move_base/goal", 1000);
+  cancel = n.advertise<std_msgs::String>("/move_base/cancel", 1000);
+  
   ros::Rate loop_rate(10);
 
   int count = 0;
@@ -253,18 +257,19 @@ int main(int argc, char **argv) {
       Patrol:
         // random move around;
         if (timeOutCount < 50) {
+          actionlib_msgs::GoalID temp;
+          cancel.publish(temp);
           timeOutCount++;
           continue;
         }
-        std_msgs::String msg;
-        std::stringstream ss;
-        ss << current_pose.x + (double) 10* rand() / (RAND_MAX + 1.0) << 
-              current_pose.y + (double) 10* rand() / (RAND_MAX + 1.0) <<
-              current_pose.rx + (double) 10* rand() / (RAND_MAX + 1.0) <<
-              current_pose.ry + (double) 10* rand() / (RAND_MAX + 1.0);
-        msg.data = ss.str();
-        chatter_pub.publish(msg);
+        move_base_msgs::MoveBaseActionGoal message;
+        s.goal.target_pose.pose.position.x = current_pose.x + (double) 10* rand() / (RAND_MAX + 1.0);
+        s.goal.target_pose.pose.position.y = current_pose.y + (double) 10* rand() / (RAND_MAX + 1.0);
+        s.goal.target_pose.pose.orientation.z = current_pose.rx + (double) 10* rand() / (RAND_MAX + 1.0);
+        s.goal.target_pose.pose.orientation.w = current_pose.ry + (double) 10* rand() / (RAND_MAX + 1.0);
+        go_to_target.publish(message);
         timeOutCount = 0;
+
       WaitForReplyWhilePatrol:
         if (timeOutCount > 50) {
           timeOutCount = 0;
