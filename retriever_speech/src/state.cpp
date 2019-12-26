@@ -18,7 +18,7 @@ enum State {
   HelpPeople,
   GuidingWhileWaitForPerson,
   GuidePeople,
-}
+};
 
 enum Place {
   bathroom,
@@ -27,7 +27,7 @@ enum Place {
   elevator,
   stop,
   guide
-}
+};
 
 typedef struct {
   double x;
