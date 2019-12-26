@@ -8,6 +8,7 @@
 #include "move_base_msgs/MoveBaseActionGoal.h"
 #include "nav_msgs/Odometry.h"
 #include "actionlib_msgs/GoalID.h"
+#include "retriever_speech/user_info.h"
 #define THRESHOLD 10000
 
 enum State {
@@ -47,10 +48,10 @@ typedef struct {
 int current_state = MapConstruction;
 int current_target_place = -1;
 int timeOutCount = 0;
-P current_pose = { 0, 0, 0, 0 };
-P current_target = { 0, 0, 0, 0 };
-U current_wait_user = { 0, 0, 0 };
-U current_user = { 0, 0, 0 };
+P current_pose;
+P current_target;
+U current_wait_user;
+U current_user;
 map<int, U> lost_user; 
 map<Place, P> targetMap;
 vector<P> route;
