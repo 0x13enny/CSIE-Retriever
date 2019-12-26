@@ -196,7 +196,7 @@ void helping_people(const retriever_speech::user_info::ConstPtr& msg) {
     }
 
     if (reach_target) {
-      tts("we reached " + current_user.target);
+      tts("we reached ");
       current_state = Patrol;
       actionlib_msgs::GoalID temp;
       cancel.publish(temp);    
