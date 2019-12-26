@@ -223,10 +223,10 @@ void wait_helping_people(const retriever_speech::user_info::ConstPtr& msg) {
     timeOutCount = 0;
     current_target = targetMap.find(current_user.target);
     move_base_msgs::MoveBaseActionGoal message;
-    s.goal.target_pose.pose.position.x = current_target.x;
-    s.goal.target_pose.pose.position.y = current_target.y;
-    s.goal.target_pose.pose.orientation.z = current_target.rx;
-    s.goal.target_pose.pose.orientation.w = current_target.ry;
+    message.goal.target_pose.pose.position.x = current_target.x;
+    message.goal.target_pose.pose.position.y = current_target.y;
+    message.goal.target_pose.pose.orientation.z = current_target.rx;
+    message.goal.target_pose.pose.orientation.w = current_target.ry;
     go_to_target.publish(message);
   }
 }
