@@ -214,7 +214,7 @@ void helping_people(const csie-retriever_speech::user_info::ConstPtr& msg) {
  */
 
 void wait_helping_people(const csie-retriever_speech::user_info::ConstPtr& msg) {
-  if (msg.face > THRESHOLD && msg.id == current_wait_user.id) {
+  if (msg.face_area > THRESHOLD && msg.user_id == current_wait_user.id) {
     current_state = HelpPeople;
     timeOutCount = 0;
     current_target = targetMap.find(current_user.target);
@@ -250,7 +250,6 @@ int main(int argc, char **argv) {
   ros::Subscriber sub2 = n.subscribe("/last_see_people", 1000, last_see_people);
   ros::Subscriber sub3 = n.subscribe("/last_see_people", 1000, helping_people);
   ros::Subscriber sub4 = n.subscribe("/last_see_people", 1000, wait_helping_people);
-  ros::Subscriber sub5 = n.subscribe("/finish_construction", 1000, finish_construction_Callback);
   ros::Subscriber sub6 = n.subscribe("/hear_find_target_Callback", 1000, hear_find_target_Callback);
   ros::Subscriber sub7 = n.subscribe("/listen_to_people", 1000, listen_to_people);
   
