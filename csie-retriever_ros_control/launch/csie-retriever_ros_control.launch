@@ -8,40 +8,53 @@
   <arg name="rvizconfig" default="$(find csie-retriever_ros_control)/rviz/csie-retriever.rviz" />
 
   <!-- Convert an xacro and put on parameter server-->
-  <param name="robot_description" command="$(find xacro)/xacro.py $(arg model)" />
+  <param name="robot_description" command="$(find xacro)/xacro.py $(arg model)" /> 
 
   <!--Load controller parameter-->
   <rosparam command="load" file="$(arg diffconfig)"/>
-  
-  <!--communicate with robot by serial port using ROSARIA-->
-  <!--Main control-->
-  <node name="aria_controller" pkg="rosaria" type="RosAria"
-    _port="/dev/ttyUSB0"/>
+
 
   <!--Spawn Controller-->
   <node name="diff_controller_spawner" pkg="controller_manager" type="spawner"
     args="retriever_joint_state_controller
-          retriever_diff_drive_controller"/>
+          retriever_diff_drive_controller"/> 
+
+  <!--communicate with robot by serial port using ROSARIA-->
+  <!--Main control-->
+  <node name="aria_controller" pkg="rosaria" type="RosAria">
+    <param name="base_link_frame" value="base_footprint"/>
+    <remap from="/aria_controller/cmd_vel" to="/cmd_vel"/>
+  </node>
+
+  <!--Publish robot state-->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+    respawn="false" output="screen">
+   <param name="publish_frequency" type="double" value="30.0"/>
+
+  </node>
+
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" ></node>
+
+  
+    <!--port="/dev/ttyUSB0"/>-->
 
   <!--Main control node-->
   <!--<node name="retriever_ros_control" pkg="retriever_ros_control" type="retriever_ros_control"
     output="log" respawn="true" respawn_delay="3"/>-->
 
-  <!--Publish robot state-->
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
-    respawn="false" output="screen">
-  </node>
 
   <!--Gui steering console (Optional)-->
   <group if="$(arg rqt_steering)">
     <node name="rqt_robot_steering" pkg="rqt_robot_steering" type="rqt_robot_steering">
-      <param name="default_topic" value="/cmd_vel"/>
+      <param name="default_topic" value="/aria_controller/cmd_vel"/>
       <!--param name="default_vx_max" value="0.3"/-->
       <!--param name="default_vx_min" value="-0.25"/-->
     </node>
   </group>
 
-  <!--Gui rviz interface (Optional)-->
+
+
+<!--Gui rviz interface (Optional)-->
   <group if="$(arg rviz)">
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" />
   </group>
