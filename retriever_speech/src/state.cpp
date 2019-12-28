@@ -4,7 +4,9 @@
 #include <chrono>
 #include <sstream>
 #include <map>
+#include <vector>
 #include <string>
+#include <math.h>
 #include "move_base_msgs/MoveBaseActionGoal.h"
 #include "nav_msgs/Odometry.h"
 #include "actionlib_msgs/GoalID.h"
@@ -40,7 +42,6 @@ typedef struct {
 } P;
 
 typedef struct {
-  // std::chrono::time_point<std::chrono::system_clock> ts;
   int id;
   int face;
   Place target;
@@ -48,7 +49,6 @@ typedef struct {
 
 // public variable;
 int current_state = MapConstruction;
-int current_target_place = -1;
 int timeOutCount = 0;
 P current_pose;
 P current_target;
@@ -56,7 +56,7 @@ U current_wait_user;
 U current_user;
 map<int, U> lost_user; 
 map<Place, P> targetMap;
-vector<P> route;
+//vector<P> route;
 ros::NodeHandle n;
 ros::Publisher go_to_target;
 ros::Publisher cancel;
@@ -68,6 +68,15 @@ void tts(string s) {
 void find_plan() {
   // find route based on current position
   ;
+}
+
+bool reach_target() {
+  double dis = sqrt((current_target.x - current_pose.x) ** 2 + 
+               (current_target.y - current_pose.y) ** 2 +
+               (current_target.rx - current_pose.rx) ** 2 +
+               (current_target.ry - current_pose.ry) ** 2);
+  if (dis < .001) return true;
+  return false;
 }
 
 /*
@@ -86,7 +95,6 @@ void hear_current_pose(const nav_msgs::Odometry::ConstPtr& msg) {
 
 // keep track of person saw
 void last_see_people(const retriever_speech::user_info::ConstPtr& msg) {
-  //current_user.ts = std::chrono::system_clock::now();
   current_user.id = msg.user_id;
   current_user.face = msg.face_area;
 }
@@ -119,7 +127,7 @@ void hear_find_target_Callback(const std_msgs::String::ConstPtr& msg) {
 void listen_to_people(const std_msgs::String::ConstPtr& msg) {
   if (current_state == WaitForReplyWhilePatrol) {
     if (!strcmp(msg->data.c_str(), "yes")) {
-      if (!strcmp(current_wait_user.target, "guide")) {
+      if (current_wait_user.target == guide) {
         current_state = GuidePeople;
       } else {
         current_state = HelpPeople;
@@ -133,10 +141,14 @@ void listen_to_people(const std_msgs::String::ConstPtr& msg) {
     }
     return;
   }
-  if (current_state == Patrol && (//std::chrono::system_clock::now() - current_user.ts < 1. || 
-                                current_user.face > THRESHOLD)) {
+  if (current_state == Patrol && (current_user.face > THRESHOLD)) {
     // check if person is lost
-    U user = lost_user.find(current_user.id);
+    U user;
+    auto tmp = lost_user.find(current_user.id);
+    if (tmp != lost_user.end()) {
+      user = tmp->second;
+    }
+    
     if (user) {
       current_state = WaitForReplyWhilePatrol;
       current_wait_user = user;
@@ -144,33 +156,49 @@ void listen_to_people(const std_msgs::String::ConstPtr& msg) {
     } 
 
     if (!strcmp(msg->data.c_str(), "bathroom")) {
-      current_target = targetMap.find(bathroom);
       current_state = HelpPeople;
       current_user.target = bathroom;
+      auto tmp = targetMap.find(current_user.target);
+      if (tmp != targetMap.end()) {
+        current_target = tmp->second;
+      }
     } else if (!strcmp(msg->data.c_str(), "water_dispenser")) {
-      current_target = targetMap.find(water_dispenser);
       current_state = HelpPeople;
       current_user.target = water_dispenser;
+      auto tmp = targetMap.find(current_user.target);
+      if (tmp != targetMap.end()) {
+        current_target = tmp->second;
+      }
     } else if (!strcmp(msg->data.c_str(), "stairs")) {
-      current_target = targetMap.find(stairs);
       current_state = HelpPeople;
       current_user.target = stairs;
+      auto tmp = targetMap.find(current_user.target);
+      if (tmp != targetMap.end()) {
+        current_target = tmp->second;
+      }
     } else if (!strcmp(msg->data.c_str(), "elevator")) {
-      current_target = targetMap.find(elevator);
       current_state = HelpPeople;
       current_user.target = elevator;
+      auto tmp = targetMap.find(current_user.target);
+      if (tmp != targetMap.end()) {
+        current_target = tmp->second;
+      }
     } else if (!strcmp(msg->data.c_str(), "stop")) {
-      current_target = targetMap.find(stop);
       current_state = HelpPeople;
       current_user.target = stop;
+      auto tmp = targetMap.find(current_user.target);
+      if (tmp != targetMap.end()) {
+        current_target = tmp->second;
+      }
     } else if (!strcmp(msg->data.c_str(), "guide")) {
-      find_plan();
+      // find_plan();
       current_state = GuidePeople;
       current_user.target = guide;
     }
 
     if (current_state == HelpPeople || current_state == GuidePeople) {
       // pub 
+      move_base_msgs::MoveBaseActionGoal s;
       s.goal.target_pose.pose.position.x = current_target.x;
       s.goal.target_pose.pose.position.y = current_target.y;
       s.goal.target_pose.pose.orientation.z = current_target.rx;
@@ -195,21 +223,13 @@ void helping_people(const retriever_speech::user_info::ConstPtr& msg) {
       return;
     }
 
-    if (reach_target) {
+    if (reach_target()) {
       tts("we reached ");
       current_state = Patrol;
       actionlib_msgs::GoalID temp;
       cancel.publish(temp);    
       return;
     }
-
-    // control the speed
-    // move_base_msgs::MoveBaseActionGoal message;
-    // s.goal.target_pose.pose.position.x = current_user.x;
-    // s.goal.target_pose.pose.position.y = current_user.y;
-    // s.goal.target_pose.pose.orientation.z = current_user.rx;
-    // s.goal.target_pose.pose.orientation.w = current_user.ry;
-    // go_to_target.publish(message);
   }
 }
 
@@ -221,7 +241,11 @@ void wait_helping_people(const retriever_speech::user_info::ConstPtr& msg) {
   if (msg.face_area > THRESHOLD && msg.user_id == current_wait_user.id) {
     current_state = HelpPeople;
     timeOutCount = 0;
-    current_target = targetMap.find(current_user.target);
+    auto tmp = targetMap.find(current_user.target);
+    if (tmp != targetMap.end()) {
+      current_target = tmp->second;
+    }
+
     move_base_msgs::MoveBaseActionGoal message;
     message.goal.target_pose.pose.position.x = current_target.x;
     message.goal.target_pose.pose.position.y = current_target.y;
@@ -290,14 +314,14 @@ int main(int argc, char **argv) {
           current_state = Patrol;
           break;
         }
-        if (timeOutCount % 10 == 0) {
+        if (timeOutCount % 20 == 0) {
           tts("Are you going to ?");
         }
         timeOutCount++;
       HelpingWhileWaitForPerson:
         if (timeOutCount > 50) {
           timeOutCount = 0;
-          lost_user.insert(current_wait_user.id, current_wait_user);
+          lost_user[current_wait_user.id] = current_wait_user;
           current_state = Patrol;
           break;
         }
@@ -308,7 +332,7 @@ int main(int argc, char **argv) {
       GuidingWhileWaitForPerson:
         if (timeOutCount > 50) {
           timeOutCount = 0;
-          lost_user.insert(current_wait_user.id, current_wait_user);
+          lost_user[current_wait_user.id] = current_wait_user;
           current_state = Patrol;
           break;
         }
