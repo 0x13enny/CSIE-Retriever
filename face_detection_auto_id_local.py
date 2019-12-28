@@ -1,5 +1,4 @@
 import subprocess
-import shlex
 import time
 
 import face_recognition
@@ -97,8 +96,9 @@ if __name__ == '__main__':
       user_face_size = face_sizes[face_idx]
       top, right, bottom, left = face_locations[face_idx]
 
-      cmd = f'source /opt/ros/melodic/setup.bash;source /home/benny/Documents/retriever_ws/devel/setup.bash;rostopic pub /last_see_people retriever_speech/user_info "face_area: {user_face_size}\nuser_id: {user_id}"'
-      subprocess.run(shlex.split(cmd), stderr=subprocess.PIPE)
+      subprocess.run(['source', '/opt/ros/melodic/setup.bash'], stderr=subprocess.PIPE)
+      subprocess.run(['source', '/home/benny/Documents/retriever_ws/devel/setup.bash'], stderr=subprocess.PIPE)
+      subprocess.run(['rostopic', 'pub', '/last_see_people', 'retriever_speech/user_info', f'"face_area: {user_face_size} user_id: {user_id}"'], stderr=subprocess.PIPE)
 
       tag = f'User {user_id}'
       print(f'{tag} ({user_face_size})')
