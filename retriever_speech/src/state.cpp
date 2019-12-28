@@ -6,6 +6,8 @@
 #include "actionlib_msgs/GoalStatusArray.h"
 #include "retriever_speech/user_info.h"
 #include <time.h> 
+#include <stdlib.h>
+#include <cstdlib> 
 #include <chrono>
 #include <sstream>
 #include <map>
@@ -51,7 +53,6 @@ typedef struct {
 // public variable;
 int current_state = MapConstruction;
 int timeOutCount = 0;
-bool arrived = false;
 P current_pose;
 P current_target;
 U current_wait_user;
@@ -62,8 +63,9 @@ map<Place, P> targetMap;
 ros::Publisher go_to_target;
 ros::Publisher cancel;
 
-void tts(string s) {
-  ;
+void tts(string& s) {
+  string cmd = "play -v 10 " + s + ".mp3";
+  system(cmd.c_str());
 }
 
 void find_plan() {
@@ -71,10 +73,15 @@ void find_plan() {
   ;
 }
 
-void reach_target(const actionlib_msgs::GoalStatusArray::ConstPtr& msg) {
-  if (msg->status_list[0].status == 3 && (msg->status_list[0].text!="Goal reached.")) {
-    arrived = true;
+bool reach_target() {
+  double distance = abs(current_pose.x - current_target.x) + 
+                    abs(current_pose.y - current_target.y) +
+                    abs(current_pose.rx - current_target.rx) +
+                    abs(current_pose.ry - current_target.ry) +
+  if (distance < .001) {
+    return true;
   }
+  return false;
 }
 
 /*
@@ -192,7 +199,6 @@ void listen_to_people(const std_msgs::String::ConstPtr& msg) {
 
     if (current_state == HelpPeople || current_state == GuidePeople) {
       // pub 
-      arrived = false;
       move_base_msgs::MoveBaseActionGoal s;
       s.goal.target_pose.pose.position.x = current_target.x;
       s.goal.target_pose.pose.position.y = current_target.y;
@@ -218,8 +224,14 @@ void helping_people(const retriever_speech::user_info::ConstPtr& msg) {
       return;
     }
 
-    if (arrived) {
-      tts("we reached ");
+    if (reach_target()) {
+      if (current_user.target == bathroom) {
+        tts("bathroom");
+      } else if (current_user.target == stairs) {
+        tts("stairs");
+      } else if (current_user.target == elevator) {
+        tts("elevator");
+      } 
       current_state = Patrol;
       actionlib_msgs::GoalID temp;
       cancel.publish(temp);    
@@ -276,7 +288,6 @@ int main(int argc, char **argv) {
   ros::Subscriber sub4 = n.subscribe("/last_see_people", 1000, wait_helping_people);
   ros::Subscriber sub6 = n.subscribe("/hear_find_target_Callback", 1000, hear_find_target_Callback);
   ros::Subscriber sub7 = n.subscribe("/listen_to_people", 1000, listen_to_people);
-  ros::Subscriber sub8 = n.subscribe("/move_base/result", 1000, reach_target);
   
   while (ros::ok()) {
     ros::spinOnce();
@@ -312,7 +323,13 @@ int main(int argc, char **argv) {
           break;
         }
         if (timeOutCount % 20 == 0) {
-          tts("You are the guy lost before, do you want to keep going?");
+          if (current_user.target == bathroom) {
+            tts("resume_bathroom");
+          } else if (current_user.target == stairs) {
+            tts("resume_stairs");
+          } else if (current_user.target == elevator) {
+            tts("resume_elevator");
+          } 
         }
         timeOutCount++;
       HelpingWhileWaitForPerson:
@@ -323,7 +340,7 @@ int main(int argc, char **argv) {
           break;
         }
         if (timeOutCount % 10 == 0) {
-          tts("Hello? stay behind me!!!");
+          tts("stay_close");
         }
         timeOutCount++;
       GuidingWhileWaitForPerson:
@@ -334,7 +351,7 @@ int main(int argc, char **argv) {
           break;
         }
         if (timeOutCount % 10 == 0) {
-          tts("Hello? stay behind me!!!");
+          tts("stay_close");
         }
         timeOutCount++;
       default:
