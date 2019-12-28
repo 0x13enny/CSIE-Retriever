@@ -1,7 +1,5 @@
 #!/usr/bin/python3
 
-#import subprocess
-
 import shlex
 import time
 import rospy
@@ -105,7 +103,6 @@ if __name__ == '__main__':
       user = user_info()
       #cmd = f'source /opt/ros/melodic/setup.bash;source /home/benny/Documents/retriever_ws/devel/setup.bash;rostopic pub /last_see_people retriever_speech/user_info "face_area: {user_face_size} user_id: {user_id}"'
 
-      #subprocess.run(shlex.split(cmd), stderr=subprocess.PIPE)
 
       #tag = f'User {user_id}'
       user.user_id = user_id
