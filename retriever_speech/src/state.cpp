@@ -1,6 +1,7 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include "move_base_msgs/MoveBaseActionGoal.h"
+#include "move_base_msgs/MoveBaseActionResult.h"
 #include "nav_msgs/Odometry.h"
 #include "actionlib_msgs/GoalID.h"
 #include "actionlib_msgs/GoalStatusArray.h"
@@ -300,15 +301,15 @@ int main(int argc, char **argv) {
     switch (current_state) {
       case Patrol:
         // random move around;
-        if (timeOutCount > 1200) {
+        if (timeOutCount > 500) {
           actionlib_msgs::GoalID temp;
           cancel.publish(temp);
           timeOutCount = 0;
         } 
-        if (timeOutCount == 1000) {
+        if (timeOutCount == 550) {
           move_base_msgs::MoveBaseActionGoal message;
-          message.goal.target_pose.pose.position.x = current_pose.x + (double) 1* rand() / (RAND_MAX + 1.0);
-          message.goal.target_pose.pose.position.y = current_pose.y + (double) 1* rand() / (RAND_MAX + 1.0);
+          message.goal.target_pose.pose.position.x = current_pose.x + (double) 0.5* rand() / (RAND_MAX + 1.0);
+          message.goal.target_pose.pose.position.y = current_pose.y + (double) 0.5* rand() / (RAND_MAX + 1.0);
           message.goal.target_pose.pose.orientation.z = current_pose.rx + (double) 0.1* rand() / (RAND_MAX + 1.0);
           message.goal.target_pose.pose.orientation.w = current_pose.ry + (double) 0.1* rand() / (RAND_MAX + 1.0);
           message.goal.target_pose.header.frame_id = "map";
