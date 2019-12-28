@@ -15,7 +15,7 @@
 #include <vector>
 #include <string>
 #include <math.h>
-#define THRESHOLD 10000
+#define THRESHOLD 70000
 
 using namespace std;
 
@@ -76,8 +76,19 @@ void find_plan() {
 }
 
 void reach_target(const move_base_msgs::MoveBaseActionResult::ConstPtr& msg) {
-  if (msg->status.status == 3 && (msg->status.text != "Goal reached.")) {
-    arrived = true;
+  if (current_state == HelpPeople && msg->status.status == 3 && (msg->status.text != "Goal reached.")) {
+    if (current_user.target == bathroom) {
+      tts("bathroom");
+    } else if (current_user.target == stairs) {
+      tts("stairs");
+    } else if (current_user.target == elevator) {
+      tts("elevator");
+    } 
+    ROS_INFO("reach the target: HelpPeople --> Patrol");
+    current_state = Patrol;
+    actionlib_msgs::GoalID temp;
+    cancel.publish(temp);    
+    return;
   }
 }
 
@@ -130,6 +141,7 @@ void hear_find_target_Callback(const std_msgs::String::ConstPtr& msg) {
 void listen_to_people(const std_msgs::String::ConstPtr& msg) {
   if (current_state == WaitForReplyWhilePatrol) {
     if (!strcmp(msg->data.c_str(), "yes")) {
+      ROS_INFO("lost person reply yes");
       if (current_wait_user.target == guide) {
         current_state = GuidePeople;
       } else {
@@ -138,6 +150,7 @@ void listen_to_people(const std_msgs::String::ConstPtr& msg) {
       lost_user.erase(current_wait_user.id);
       timeOutCount = 0;
     } else if (!strcmp(msg->data.c_str(), "no")) {
+      ROS_INFO("lost person reply no");
       lost_user.erase(current_wait_user.id);
       current_state = Patrol;
       timeOutCount = 0;
@@ -145,6 +158,7 @@ void listen_to_people(const std_msgs::String::ConstPtr& msg) {
     return;
   }
   if (current_state == Patrol && (current_user.face > THRESHOLD)) {
+    ROS_INFO("hear voice: face > THRESHOLD");
     // check if person is lost
     U user;
     auto tmp = lost_user.find(current_user.id);
@@ -205,29 +219,13 @@ void listen_to_people(const std_msgs::String::ConstPtr& msg) {
  */
 
 void helping_people(const retriever_speech::user_info::ConstPtr& msg) {
-  if (current_state == GuidePeople) {
+  if (current_state == HelpPeople) {
     if (msg->face_area < THRESHOLD) {
-      ROS_INFO("Helping people --> Wait for people");
+      ROS_INFO("face_area < THRESHOLD, Helping people --> Wait for people");
       current_state = HelpingWhileWaitForPerson;
       current_wait_user = current_user;
       actionlib_msgs::GoalID temp;
       cancel.publish(temp);    
-      return;
-    }
-
-    if (arrived) {
-      if (current_user.target == bathroom) {
-        tts("bathroom");
-      } else if (current_user.target == stairs) {
-        tts("stairs");
-      } else if (current_user.target == elevator) {
-        tts("elevator");
-      } 
-      ROS_INFO("reach the target: HelpPeople --> Patrol");
-      current_state = Patrol;
-      actionlib_msgs::GoalID temp;
-      cancel.publish(temp);
-      arrived = false;    
       return;
     }
   }
@@ -246,6 +244,7 @@ void wait_helping_people(const retriever_speech::user_info::ConstPtr& msg) {
       current_target = tmp->second;
     }
 
+    ROS_INFO("face_area > THRESHOLD, HelpingWhileWaitForPerson --> HelpPeople");
     move_base_msgs::MoveBaseActionGoal message;
     message.goal.target_pose.pose.position.x = current_target.x;
     message.goal.target_pose.pose.position.y = current_target.y;
@@ -319,6 +318,7 @@ int main(int argc, char **argv) {
         break;
       case WaitForReplyWhilePatrol:
         if (timeOutCount > 50) {
+          ROS_INFO("Timeout, Not replying, WaitForReplyWhilePatrol -> Patrol");
           timeOutCount = 0;
           current_state = Patrol;
           break;
@@ -336,6 +336,7 @@ int main(int argc, char **argv) {
         break;
       case HelpingWhileWaitForPerson:
         if (timeOutCount > 50) {
+          ROS_INFO("Timeout, Person lost, HelpingWhileWaitForPerson --> Patrol");
           timeOutCount = 0;
           lost_user[current_wait_user.id] = current_wait_user;
           current_state = Patrol;
