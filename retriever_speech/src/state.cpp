@@ -102,6 +102,7 @@ void hear_current_pose(const nav_msgs::Odometry::ConstPtr& msg) {
 void last_see_people(const retriever_speech::user_info::ConstPtr& msg) {
   current_user.id = msg->user_id;
   current_user.face = msg->face_area;
+  ROS_INFO("detect user: %lf, area: %lf", current_user.id, current_user.face);
 }
 
 /*
@@ -112,15 +113,14 @@ void last_see_people(const retriever_speech::user_info::ConstPtr& msg) {
 void hear_find_target_Callback(const std_msgs::String::ConstPtr& msg) {
   if (current_state != MapConstruction) return;
   if (!strcmp(msg->data.c_str(), "bathroom")) {
+    ROS_INFO("detect bathroom at %lf, %lf", current_target.x, current_target.y);
     targetMap[bathroom] = current_pose;
-  } else if (!strcmp(msg->data.c_str(), "water_dispenser")) {
-    targetMap[water_dispenser] = current_pose;
   } else if (!strcmp(msg->data.c_str(), "stairs")) {
+    ROS_INFO("detect stairs at %lf, %lf", current_target.x, current_target.y);
     targetMap[stairs] = current_pose;
   } else if (!strcmp(msg->data.c_str(), "elevator")) {
+    ROS_INFO("detect elevator at %lf, %lf", current_target.x, current_target.y);
     targetMap[elevator] = current_pose;
-  } else if (!strcmp(msg->data.c_str(), "stop")) {
-    targetMap[stop] = current_pose;
   }
 }
 
@@ -163,13 +163,7 @@ void listen_to_people(const std_msgs::String::ConstPtr& msg) {
       if (tmp != targetMap.end()) {
         current_target = tmp->second;
       }
-    } else if (!strcmp(msg->data.c_str(), "water_dispenser")) {
-      current_state = HelpPeople;
-      current_user.target = water_dispenser;
-      auto tmp = targetMap.find(current_user.target);
-      if (tmp != targetMap.end()) {
-        current_target = tmp->second;
-      }
+      ROS_INFO("hear go to bathroom");
     } else if (!strcmp(msg->data.c_str(), "stairs")) {
       current_state = HelpPeople;
       current_user.target = stairs;
@@ -177,6 +171,7 @@ void listen_to_people(const std_msgs::String::ConstPtr& msg) {
       if (tmp != targetMap.end()) {
         current_target = tmp->second;
       }
+      ROS_INFO("hear go to stairs");
     } else if (!strcmp(msg->data.c_str(), "elevator")) {
       current_state = HelpPeople;
       current_user.target = elevator;
@@ -184,17 +179,12 @@ void listen_to_people(const std_msgs::String::ConstPtr& msg) {
       if (tmp != targetMap.end()) {
         current_target = tmp->second;
       }
-    } else if (!strcmp(msg->data.c_str(), "stop")) {
-      current_state = HelpPeople;
-      current_user.target = stop;
-      auto tmp = targetMap.find(current_user.target);
-      if (tmp != targetMap.end()) {
-        current_target = tmp->second;
-      }
+      ROS_INFO("hear go to elevator");
     } else if (!strcmp(msg->data.c_str(), "guide")) {
       // find_plan();
       current_state = GuidePeople;
       current_user.target = guide;
+      ROS_INFO("hear guide");
     }
 
     if (current_state == HelpPeople || current_state == GuidePeople) {
@@ -217,6 +207,7 @@ void listen_to_people(const std_msgs::String::ConstPtr& msg) {
 void helping_people(const retriever_speech::user_info::ConstPtr& msg) {
   if (current_state == GuidePeople) {
     if (msg->face_area < THRESHOLD) {
+      ROS_INFO("Helping people --> Wait for people");
       current_state = HelpingWhileWaitForPerson;
       current_wait_user = current_user;
       actionlib_msgs::GoalID temp;
@@ -232,6 +223,7 @@ void helping_people(const retriever_speech::user_info::ConstPtr& msg) {
       } else if (current_user.target == elevator) {
         tts("elevator");
       } 
+      ROS_INFO("reach the target: HelpPeople --> Patrol");
       current_state = Patrol;
       actionlib_msgs::GoalID temp;
       cancel.publish(temp);    
