@@ -1,10 +1,15 @@
-import subprocess
+#!/usr/bin/python3
+
+#import subprocess
+
 import shlex
 import time
-
+import rospy
 import face_recognition
 import cv2
+from retriever_speech.msg import user_info 
 
+pub = rospy.Publisher("/last_see_people", user_info,queue_size=10)
 
 def compute_face_sizes(face_locations, face_encodings):
   face_sizes = []
@@ -37,6 +42,7 @@ def match_face(known_faces, face_encoding, threshold):
 
 
 if __name__ == '__main__':
+  rospy.init_node('face_recognition', anonymous=True)
 
   # Get a reference to webcam #0 (the default one)
   video_capture = cv2.VideoCapture(0)
@@ -96,13 +102,17 @@ if __name__ == '__main__':
       
       user_face_size = face_sizes[face_idx]
       top, right, bottom, left = face_locations[face_idx]
+      user = user_info()
+      #cmd = f'source /opt/ros/melodic/setup.bash;source /home/benny/Documents/retriever_ws/devel/setup.bash;rostopic pub /last_see_people retriever_speech/user_info "face_area: {user_face_size} user_id: {user_id}"'
 
-      cmd = f'source /opt/ros/melodic/setup.bash;source /home/benny/Documents/retriever_ws/devel/setup.bash;rostopic pub /last_see_people retriever_speech/user_info "face_area: {user_face_size}\nuser_id: {user_id}"'
-      subprocess.run(shlex.split(cmd), stderr=subprocess.PIPE)
+      #subprocess.run(shlex.split(cmd), stderr=subprocess.PIPE)
 
-      tag = f'User {user_id}'
-      print(f'{tag} ({user_face_size})')
-
+      #tag = f'User {user_id}'
+      user.user_id = user_id
+      user.face_area = user_face_size
+      #print(f'{tag} ({user_face_size})')
+      print(user_id, user_face_size)
+      pub.publish(user)
       # Draw a bounding box around the face
       # cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
       # cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (0, 0, 255), cv2.FILLED)
@@ -115,8 +125,8 @@ if __name__ == '__main__':
     # Hit 'q' on the keyboard to quit!
     # if cv2.waitKey(1) & 0xFF == ord('q'):
     #   break
-    time.sleep(1)
-
+    #time.sleep(1)
+    rospy.sleep(1)
 
   # Release handle to the webcam
   video_capture.release()

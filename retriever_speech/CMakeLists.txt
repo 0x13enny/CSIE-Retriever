@@ -14,6 +14,7 @@ find_package(catkin REQUIRED
   move_base_msgs
   nav_msgs
   actionlib_msgs
+  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -108,7 +109,7 @@ catkin_python_setup()
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES retriever_speech
-  CATKIN_DEPENDS roscpp std_msgs move_base_msgs nav_msgs actionlib_msgs
+  CATKIN_DEPENDS roscpp std_msgs move_base_msgs nav_msgs actionlib_msgs message_runtime
 #  DEPENDS system_lib
 )
 

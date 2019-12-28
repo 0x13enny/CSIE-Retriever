@@ -15,7 +15,7 @@
 #include <vector>
 #include <string>
 #include <math.h>
-#define THRESHOLD 70000
+#define THRESHOLD 20000
 
 using namespace std;
 
@@ -104,6 +104,7 @@ void hear_current_pose(const nav_msgs::Odometry::ConstPtr& msg) {
   current_pose.y = msg->pose.pose.position.y;
   current_pose.rx = msg->pose.pose.orientation.z;
   current_pose.ry = msg->pose.pose.orientation.w;
+//  ROS_INFO("%lf,%lf",current_pose.x, current_pose.y);
 }
 
 // keep track of person saw
@@ -123,13 +124,13 @@ void hear_find_target_Callback(const std_msgs::String::ConstPtr& msg) {
   printf("%d",current_state == MapConstruction);
   if (current_state != MapConstruction) return;
   if (!strcmp(msg->data.c_str(), "bathroom")) {
-    ROS_INFO("detect bathroom at %lf, %lf", current_target.x, current_target.y);
+    ROS_INFO("detect bathroom at %lf, %lf", current_pose.x, current_pose.y);
     targetMap[bathroom] = current_pose;
   } else if (!strcmp(msg->data.c_str(), "stairs")) {
-    ROS_INFO("detect stairs at %lf, %lf", current_target.x, current_target.y);
+    ROS_INFO("detect stairs at %lf, %lf", current_pose.x, current_pose.y);
     targetMap[stairs] = current_pose;
   } else if (!strcmp(msg->data.c_str(), "elevator")) {
-    ROS_INFO("detect elevator at %lf, %lf", current_target.x, current_target.y);
+    ROS_INFO("detect elevator at %lf, %lf", current_pose.x, current_pose.y);
     targetMap[elevator] = current_pose;
   }
 }
@@ -278,7 +279,7 @@ int main(int argc, char **argv) {
 
   int count = 0;
 
-  ros::Subscriber sub1 = n.subscribe("/odom", 1000, hear_current_pose);
+  ros::Subscriber sub1 = n.subscribe("/aria_controller/pose", 1000, hear_current_pose);
   ros::Subscriber sub2 = n.subscribe("/last_see_people", 1000, last_see_people);
   ros::Subscriber sub3 = n.subscribe("/last_see_people", 1000, helping_people);
   ros::Subscriber sub4 = n.subscribe("/last_see_people", 1000, wait_helping_people);
@@ -300,12 +301,12 @@ int main(int argc, char **argv) {
     switch (current_state) {
       case Patrol:
         // random move around;
-        if (timeOutCount > 500) {
+        if (timeOutCount > 5000) {
           actionlib_msgs::GoalID temp;
           cancel.publish(temp);
           timeOutCount = 0;
         } 
-        if (timeOutCount == 550) {
+        if (timeOutCount == 5500) {
           move_base_msgs::MoveBaseActionGoal message;
           message.goal.target_pose.pose.position.x = current_pose.x + (double) 0.5* rand() / (RAND_MAX + 1.0);
           message.goal.target_pose.pose.position.y = current_pose.y + (double) 0.5* rand() / (RAND_MAX + 1.0);
@@ -335,26 +336,26 @@ int main(int argc, char **argv) {
         timeOutCount++;
         break;
       case HelpingWhileWaitForPerson:
-        if (timeOutCount > 50) {
+        if (timeOutCount > 1000) {
           ROS_INFO("Timeout, Person lost, HelpingWhileWaitForPerson --> Patrol");
           timeOutCount = 0;
           lost_user[current_wait_user.id] = current_wait_user;
           current_state = Patrol;
           break;
         }
-        if (timeOutCount % 10 == 0) {
+        if (timeOutCount % 400 == 0) {
           tts("stay_close");
         }
         timeOutCount++;
         break;
       case GuidingWhileWaitForPerson:
-        if (timeOutCount > 50) {
+        if (timeOutCount > 1000) {
           timeOutCount = 0;
           lost_user[current_wait_user.id] = current_wait_user;
           current_state = Patrol;
           break;
         }
-        if (timeOutCount % 10 == 0) {
+        if (timeOutCount % 400 == 0) {
           tts("stay_close");
         }
         timeOutCount++;
