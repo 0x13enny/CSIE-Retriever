@@ -293,25 +293,26 @@ int main(int argc, char **argv) {
     loop_rate.sleep();
 
     ros::param::get("finish_construction", finished);
-    if (finished) {
+    if (finished && count == 0) {
       current_state = Patrol;
       ROS_INFO("Construction --> Patrol");
+      count = 1;
     }
 
     switch (current_state) {
       case Patrol:
         // random move around;
-        if (timeOutCount > 1100) {
+        if (timeOutCount > 1200) {
           actionlib_msgs::GoalID temp;
           cancel.publish(temp);
           timeOutCount = 0;
         } 
         if (timeOutCount == 1000) {
           move_base_msgs::MoveBaseActionGoal message;
-          message.goal.target_pose.pose.position.x = current_pose.x + (double) 10* rand() / (RAND_MAX + 1.0);
-          message.goal.target_pose.pose.position.y = current_pose.y + (double) 10* rand() / (RAND_MAX + 1.0);
-          message.goal.target_pose.pose.orientation.z = current_pose.rx + (double) 10* rand() / (RAND_MAX + 1.0);
-          message.goal.target_pose.pose.orientation.w = current_pose.ry + (double) 10* rand() / (RAND_MAX + 1.0);
+          message.goal.target_pose.pose.position.x = current_pose.x + (double) 1* rand() / (RAND_MAX + 1.0);
+          message.goal.target_pose.pose.position.y = current_pose.y + (double) 1* rand() / (RAND_MAX + 1.0);
+          message.goal.target_pose.pose.orientation.z = current_pose.rx + (double) 0.1* rand() / (RAND_MAX + 1.0);
+          message.goal.target_pose.pose.orientation.w = current_pose.ry + (double) 0.1* rand() / (RAND_MAX + 1.0);
           message.header.frame_id = "map";
           go_to_target.publish(message);
         }
@@ -361,7 +362,7 @@ int main(int argc, char **argv) {
       default:
         break;
     }
-    ros::spin();
+//    ros::spin();
   }
 
   return 0;
