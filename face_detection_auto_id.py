@@ -99,12 +99,21 @@ if __name__ == '__main__':
       user_face_size = face_sizes[face_idx]
       top, right, bottom, left = face_locations[face_idx]
 
-      _, stdout, stderr = ssh.exec_command(
-        f'source /opt/ros/melodic/setup.bash;source /home/benny/Documents/retriever_ws/devel/setup.bash;rostopic pub /last_see_people retriever_speech/user_info "face_area: {user_face_size}\nuser_id: {user_id}"'
-      )
+      ssh_success = False
+      while not ssh_success:
+        try:
+          _, stdout, stderr = ssh.exec_command(
+            f'source /opt/ros/melodic/setup.bash;source /home/benny/Documents/retriever_ws/devel/setup.bash;rostopic pub /last_see_people retriever_speech/user_info "face_area: {user_face_size}\nuser_id: {user_id}"'
+          )
 
-      # print(f'stdout:\n{stdout.read()}')
-      # print(f'stderr:\n{stderr.read()}')
+          # print(f'stdout:\n{stdout.read()}')
+          # print(f'stderr:\n{stderr.read()}')
+
+          ssh_success = True
+
+        except paramiko.ssh_exception.ChannelException:
+          pass
+
 
       tag = f'User {user_id}'
       print(f'{tag} ({user_face_size})')
