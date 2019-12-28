@@ -196,7 +196,7 @@ void listen_to_people(const std_msgs::String::ConstPtr& msg) {
       s.goal.target_pose.pose.position.y = current_target.y;
       s.goal.target_pose.pose.orientation.z = current_target.rx;
       s.goal.target_pose.pose.orientation.w = current_target.ry;
-      s.header.frame_id = "map";
+      s.goal.target_pose.header.frame_id = "map";
       go_to_target.publish(s);
     }
     
@@ -253,7 +253,7 @@ void wait_helping_people(const retriever_speech::user_info::ConstPtr& msg) {
     message.goal.target_pose.pose.position.y = current_target.y;
     message.goal.target_pose.pose.orientation.z = current_target.rx;
     message.goal.target_pose.pose.orientation.w = current_target.ry;
-    message.header.frame_id = "map";
+    message.goal.target_pose.header.frame_id = "map";
     go_to_target.publish(message);
   }
 }
@@ -313,7 +313,7 @@ int main(int argc, char **argv) {
           message.goal.target_pose.pose.position.y = current_pose.y + (double) 1* rand() / (RAND_MAX + 1.0);
           message.goal.target_pose.pose.orientation.z = current_pose.rx + (double) 0.1* rand() / (RAND_MAX + 1.0);
           message.goal.target_pose.pose.orientation.w = current_pose.ry + (double) 0.1* rand() / (RAND_MAX + 1.0);
-          message.header.frame_id = "map";
+          message.goal.target_pose.header.frame_id = "map";
           go_to_target.publish(message);
         }
         timeOutCount++;
