@@ -111,6 +111,8 @@ void last_see_people(const retriever_speech::user_info::ConstPtr& msg) {
 
 // find some targets
 void hear_find_target_Callback(const std_msgs::String::ConstPtr& msg) {
+  printf("%s",msg->data.c_str());
+  printf("%d",current_state == MapConstruction);
   if (current_state != MapConstruction) return;
   if (!strcmp(msg->data.c_str(), "bathroom")) {
     ROS_INFO("detect bathroom at %lf, %lf", current_target.x, current_target.y);
@@ -262,13 +264,16 @@ void wait_helping_people(const retriever_speech::user_info::ConstPtr& msg) {
 int main(int argc, char **argv) {
   ros::init(argc, argv, "state");
   ros::NodeHandle n;
+  ros::AsyncSpinner spinner(1);
+  spinner.start();
 
   srand( time(NULL) );
 
   bool finished;
+  current_state = MapConstruction;
   
-  go_to_target = n.advertise<std_msgs::String>("/move_base/goal", 1000);
-  cancel = n.advertise<std_msgs::String>("/move_base/cancel", 1000);
+  go_to_target = n.advertise<move_base_msgs::MoveBaseActionGoal>("/move_base/goal", 1000);
+  cancel = n.advertise<actionlib_msgs::GoalID>("/move_base/cancel", 1000);
   
   ros::Rate loop_rate(10);
 
@@ -282,8 +287,7 @@ int main(int argc, char **argv) {
   ros::Subscriber sub7 = n.subscribe("/listen_to_people", 1000, listen_to_people);
   
   while (ros::ok()) {
-    ros::spinOnce();
-
+//    ROS_INFO("here");
     loop_rate.sleep();
 
     ros::param::get("finish_construction", finished);
@@ -348,6 +352,8 @@ int main(int argc, char **argv) {
         timeOutCount++;
       default:
         break;
+      ros::spin();
+
     }
   }
 
