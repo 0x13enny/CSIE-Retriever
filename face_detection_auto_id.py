@@ -110,9 +110,11 @@ if __name__ == '__main__':
           # print(f'stderr:\n{stderr.read()}')
 
           ssh_success = True
+          print('ssh ok')
 
         except paramiko.ssh_exception.ChannelException:
-          pass
+          ssh.close()
+          ssh.connect('192.168.11.36', username='test123', password='Test123')
 
 
       tag = f'User {user_id}'
