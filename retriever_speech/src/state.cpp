@@ -196,6 +196,7 @@ void listen_to_people(const std_msgs::String::ConstPtr& msg) {
       s.goal.target_pose.pose.position.y = current_target.y;
       s.goal.target_pose.pose.orientation.z = current_target.rx;
       s.goal.target_pose.pose.orientation.w = current_target.ry;
+      s.header.frame_id = "map";
       go_to_target.publish(s);
     }
     
@@ -252,6 +253,7 @@ void wait_helping_people(const retriever_speech::user_info::ConstPtr& msg) {
     message.goal.target_pose.pose.position.y = current_target.y;
     message.goal.target_pose.pose.orientation.z = current_target.rx;
     message.goal.target_pose.pose.orientation.w = current_target.ry;
+    message.header.frame_id = "map";
     go_to_target.publish(message);
   }
 }
@@ -299,20 +301,22 @@ int main(int argc, char **argv) {
     switch (current_state) {
       case Patrol:
         // random move around;
-        if (timeOutCount > 50) {
+        if (timeOutCount > 1100) {
           actionlib_msgs::GoalID temp;
           cancel.publish(temp);
           timeOutCount = 0;
         } 
-        if (timeOutCount == 0) {
+        if (timeOutCount == 1000) {
           move_base_msgs::MoveBaseActionGoal message;
           message.goal.target_pose.pose.position.x = current_pose.x + (double) 10* rand() / (RAND_MAX + 1.0);
           message.goal.target_pose.pose.position.y = current_pose.y + (double) 10* rand() / (RAND_MAX + 1.0);
           message.goal.target_pose.pose.orientation.z = current_pose.rx + (double) 10* rand() / (RAND_MAX + 1.0);
           message.goal.target_pose.pose.orientation.w = current_pose.ry + (double) 10* rand() / (RAND_MAX + 1.0);
+          message.header.frame_id = "map";
           go_to_target.publish(message);
         }
         timeOutCount++;
+        break;
       case WaitForReplyWhilePatrol:
         if (timeOutCount > 50) {
           timeOutCount = 0;
@@ -329,6 +333,7 @@ int main(int argc, char **argv) {
           } 
         }
         timeOutCount++;
+        break;
       case HelpingWhileWaitForPerson:
         if (timeOutCount > 50) {
           timeOutCount = 0;
@@ -340,6 +345,7 @@ int main(int argc, char **argv) {
           tts("stay_close");
         }
         timeOutCount++;
+        break;
       case GuidingWhileWaitForPerson:
         if (timeOutCount > 50) {
           timeOutCount = 0;
@@ -351,11 +357,11 @@ int main(int argc, char **argv) {
           tts("stay_close");
         }
         timeOutCount++;
+        break;
       default:
         break;
-      ros::spin();
-
     }
+    ros::spin();
   }
 
   return 0;
