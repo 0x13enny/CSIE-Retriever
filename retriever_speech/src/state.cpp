@@ -306,7 +306,6 @@ int main(int argc, char **argv) {
         if (timeOutCount > 1250) {
           actionlib_msgs::GoalID temp;
           cancel.publish(temp);
-          timeOutCount = 0;
         } 
         if (timeOutCount == 1375) {
           move_base_msgs::MoveBaseActionGoal message;
@@ -316,6 +315,7 @@ int main(int argc, char **argv) {
           message.goal.target_pose.pose.orientation.w = current_pose.ry + (double) 0.1* rand() / (RAND_MAX + 1.0);
           message.goal.target_pose.header.frame_id = "map";
           go_to_target.publish(message);
+          timeOutCount = 0;
         }
         timeOutCount++;
         break;
@@ -340,7 +340,7 @@ int main(int argc, char **argv) {
       case HelpingWhileWaitForPerson:
         if (timeOutCount > 1000) {
           ROS_INFO("Timeout, Person lost, HelpingWhileWaitForPerson --> Patrol");
-          ROS_INFO("add lost user %d %d",current_wait_user.id, current_wait_user.target);
+          ROS_INFO("add lost user %d %d", current_wait_user.id, current_wait_user.target);
           timeOutCount = 0;
           lost_user[current_wait_user.id] = current_wait_user;
           current_state = Patrol;
