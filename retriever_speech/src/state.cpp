@@ -50,6 +50,7 @@ typedef struct {
 // public variable;
 int current_state = MapConstruction;
 int timeOutCount = 0;
+bool arrived = false;
 P current_pose;
 P current_target;
 U current_wait_user;
@@ -70,13 +71,8 @@ void find_plan() {
   ;
 }
 
-bool reach_target() {
-  double dis = sqrt((current_target.x - current_pose.x) ** 2 + 
-               (current_target.y - current_pose.y) ** 2 +
-               (current_target.rx - current_pose.rx) ** 2 +
-               (current_target.ry - current_pose.ry) ** 2);
-  if (dis < .001) return true;
-  return false;
+void reach_target() {
+  arrived = true;
 }
 
 /*
@@ -102,7 +98,6 @@ void last_see_people(const retriever_speech::user_info::ConstPtr& msg) {
 /*
   Map Construction callback
  */
-
 
 // find some targets
 void hear_find_target_Callback(const std_msgs::String::ConstPtr& msg) {
@@ -147,13 +142,10 @@ void listen_to_people(const std_msgs::String::ConstPtr& msg) {
     auto tmp = lost_user.find(current_user.id);
     if (tmp != lost_user.end()) {
       user = tmp->second;
-    }
-    
-    if (user) {
       current_state = WaitForReplyWhilePatrol;
       current_wait_user = user;
       return;
-    } 
+    }
 
     if (!strcmp(msg->data.c_str(), "bathroom")) {
       current_state = HelpPeople;
@@ -198,12 +190,13 @@ void listen_to_people(const std_msgs::String::ConstPtr& msg) {
 
     if (current_state == HelpPeople || current_state == GuidePeople) {
       // pub 
+      arrived = false;
       move_base_msgs::MoveBaseActionGoal s;
       s.goal.target_pose.pose.position.x = current_target.x;
       s.goal.target_pose.pose.position.y = current_target.y;
       s.goal.target_pose.pose.orientation.z = current_target.rx;
       s.goal.target_pose.pose.orientation.w = current_target.ry;
-      go_to_target.publish(message);
+      go_to_target.publish(s);
     }
     
   }
@@ -223,7 +216,7 @@ void helping_people(const retriever_speech::user_info::ConstPtr& msg) {
       return;
     }
 
-    if (reach_target()) {
+    if (arrived) {
       tts("we reached ");
       current_state = Patrol;
       actionlib_msgs::GoalID temp;
@@ -280,6 +273,7 @@ int main(int argc, char **argv) {
   ros::Subscriber sub4 = n.subscribe("/last_see_people", 1000, wait_helping_people);
   ros::Subscriber sub6 = n.subscribe("/hear_find_target_Callback", 1000, hear_find_target_Callback);
   ros::Subscriber sub7 = n.subscribe("/listen_to_people", 1000, listen_to_people);
+  ros::Subscriber sub8 = n.subscribe("/move_base/result", 1000, reach_target);
   
   while (ros::ok()) {
     ros::spinOnce();
