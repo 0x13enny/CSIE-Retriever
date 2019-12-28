@@ -15,7 +15,7 @@
 #include <vector>
 #include <string>
 #include <math.h>
-#define THRESHOLD 20000
+#define THRESHOLD 30000
 
 using namespace std;
 
@@ -109,7 +109,7 @@ void hear_current_pose(const nav_msgs::Odometry::ConstPtr& msg) {
 
 // keep track of person saw
 void last_see_people(const retriever_speech::user_info::ConstPtr& msg) {
-  current_user.id = (int)msg->user_id;
+  current_user.id = 0;
   current_user.face = (int)msg->face_area;
   ROS_INFO("detect user: %d, area: %d", current_user.id, current_user.face);
 }
@@ -135,6 +135,22 @@ void hear_find_target_Callback(const std_msgs::String::ConstPtr& msg) {
   }
 }
 
+void has_face(const retriever_speech::user_info::ConstPtr& msg) {
+  if (current_state == Patrol && (msg->face_area > THRESHOLD)) {
+    ROS_INFO("lost hear voice: face > THRESHOLD");
+    // check if person is lost
+    U user;
+    auto tmp = lost_user.find(current_user.id);
+    if (tmp != lost_user.end()) {
+      user = tmp->second;
+      current_state = WaitForReplyWhilePatrol;
+      timeOutCount = 0;
+      current_wait_user = user;
+      ROS_INFO("wait for reply");
+      return;
+    }
+  }
+}
 /*
   Patrol Construction callback
  */
@@ -160,16 +176,6 @@ void listen_to_people(const std_msgs::String::ConstPtr& msg) {
   }
   if (current_state == Patrol && (current_user.face > THRESHOLD)) {
     ROS_INFO("hear voice: face > THRESHOLD");
-    // check if person is lost
-    U user;
-    auto tmp = lost_user.find(current_user.id);
-    if (tmp != lost_user.end()) {
-      user = tmp->second;
-      current_state = WaitForReplyWhilePatrol;
-      current_wait_user = user;
-      ROS_INFO("wait for reply");
-      return;
-    }
 
     if (!strcmp(msg->data.c_str(), "bathroom")) {
       current_state = HelpPeople;
@@ -283,6 +289,7 @@ int main(int argc, char **argv) {
 
   ros::Subscriber sub1 = n.subscribe("/aria_controller/pose", 1000, hear_current_pose);
   ros::Subscriber sub2 = n.subscribe("/last_see_people", 1000, last_see_people);
+  ros::Subscriber sub0 = n.subscribe("/last_see_people", 1000, has_face);
   ros::Subscriber sub3 = n.subscribe("/last_see_people", 1000, helping_people);
   ros::Subscriber sub4 = n.subscribe("/last_see_people", 1000, wait_helping_people);
   ros::Subscriber sub6 = n.subscribe("/hear_find_target_Callback", 1000, hear_find_target_Callback);
@@ -303,11 +310,7 @@ int main(int argc, char **argv) {
     switch (current_state) {
       case Patrol:
         // random move around;
-        if (timeOutCount > 750) {
-          actionlib_msgs::GoalID temp;
-          cancel.publish(temp);
-        } 
-        if (timeOutCount == 950) {
+        if (timeOutCount > 150) {
           move_base_msgs::MoveBaseActionGoal message;
           message.goal.target_pose.pose.position.x = current_pose.x + (double) 0.5* rand() / (RAND_MAX + 1.0);
           message.goal.target_pose.pose.position.y = current_pose.y + (double) 0.5* rand() / (RAND_MAX + 1.0);
@@ -315,6 +318,10 @@ int main(int argc, char **argv) {
           message.goal.target_pose.pose.orientation.w = current_pose.ry + (double) 0.1* rand() / (RAND_MAX + 1.0);
           message.goal.target_pose.header.frame_id = "map";
           go_to_target.publish(message);
+        } 
+        if (timeOutCount == 250) {
+	  actionlib_msgs::GoalID temp;
+          cancel.publish(temp);
           timeOutCount = 0;
         }
         timeOutCount++;
