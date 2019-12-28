@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
   known_faces = []
 
-  while True:
+  while not rospy.is_shutdown():
     # Grab a single frame of video
     ret, frame = video_capture.read()
 

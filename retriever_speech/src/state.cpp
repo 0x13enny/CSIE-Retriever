@@ -76,7 +76,7 @@ void find_plan() {
 }
 
 void reach_target(const move_base_msgs::MoveBaseActionResult::ConstPtr& msg) {
-  if (current_state == HelpPeople && msg->status.status == 3 && (msg->status.text != "Goal reached.")) {
+  if (current_state == HelpPeople && msg->status.status == 3 && (msg->status.text == "Goal reached.")) {
     if (current_user.target == bathroom) {
       tts("bathroom");
     } else if (current_user.target == stairs) {
@@ -167,6 +167,7 @@ void listen_to_people(const std_msgs::String::ConstPtr& msg) {
       user = tmp->second;
       current_state = WaitForReplyWhilePatrol;
       current_wait_user = user;
+      ROS_INFO("wait for reply");
       return;
     }
 
@@ -203,6 +204,7 @@ void listen_to_people(const std_msgs::String::ConstPtr& msg) {
 
     if (current_state == HelpPeople || current_state == GuidePeople) {
       // pub 
+      tts("stay_close");
       move_base_msgs::MoveBaseActionGoal s;
       s.goal.target_pose.pose.position.x = current_target.x;
       s.goal.target_pose.pose.position.y = current_target.y;
@@ -240,7 +242,7 @@ void wait_helping_people(const retriever_speech::user_info::ConstPtr& msg) {
   if (msg->face_area > THRESHOLD && msg->user_id == current_wait_user.id && current_state == HelpingWhileWaitForPerson) {
     current_state = HelpPeople;
     timeOutCount = 0;
-    auto tmp = targetMap.find(current_user.target);
+    auto tmp = targetMap.find(current_wait_user.target);
     if (tmp != targetMap.end()) {
       current_target = tmp->second;
     }
@@ -301,12 +303,12 @@ int main(int argc, char **argv) {
     switch (current_state) {
       case Patrol:
         // random move around;
-        if (timeOutCount > 5000) {
+        if (timeOutCount > 1250) {
           actionlib_msgs::GoalID temp;
           cancel.publish(temp);
           timeOutCount = 0;
         } 
-        if (timeOutCount == 5500) {
+        if (timeOutCount == 1375) {
           move_base_msgs::MoveBaseActionGoal message;
           message.goal.target_pose.pose.position.x = current_pose.x + (double) 0.5* rand() / (RAND_MAX + 1.0);
           message.goal.target_pose.pose.position.y = current_pose.y + (double) 0.5* rand() / (RAND_MAX + 1.0);
@@ -318,44 +320,47 @@ int main(int argc, char **argv) {
         timeOutCount++;
         break;
       case WaitForReplyWhilePatrol:
-        if (timeOutCount > 50) {
+        if (timeOutCount > 500) {
           ROS_INFO("Timeout, Not replying, WaitForReplyWhilePatrol -> Patrol");
           timeOutCount = 0;
           current_state = Patrol;
           break;
         }
-        if (timeOutCount % 20 == 0) {
-          if (current_user.target == bathroom) {
+        if (timeOutCount % 200 == 0) {
+          if (current_wait_user.target == bathroom) {
             tts("resume_bathroom");
-          } else if (current_user.target == stairs) {
+          } else if (current_wait_user.target == stairs) {
             tts("resume_stairs");
-          } else if (current_user.target == elevator) {
+          } else if (current_wait_user.target == elevator) {
             tts("resume_elevator");
           } 
         }
         timeOutCount++;
         break;
       case HelpingWhileWaitForPerson:
-        if (timeOutCount > 1000) {
+        if (timeOutCount > 500) {
           ROS_INFO("Timeout, Person lost, HelpingWhileWaitForPerson --> Patrol");
           timeOutCount = 0;
           lost_user[current_wait_user.id] = current_wait_user;
           current_state = Patrol;
           break;
         }
-        if (timeOutCount % 400 == 0) {
+        if (timeOutCount % 200 == 0) {
           tts("stay_close");
         }
         timeOutCount++;
         break;
       case GuidingWhileWaitForPerson:
-        if (timeOutCount > 1000) {
+        if (timeOutCount > 500) {
+	  
+	  ROS_INFO("add lost user %d %d",current_wait_user.id, current_wait_user.target);
+
           timeOutCount = 0;
           lost_user[current_wait_user.id] = current_wait_user;
           current_state = Patrol;
           break;
         }
-        if (timeOutCount % 400 == 0) {
+        if (timeOutCount % 200 == 0) {
           tts("stay_close");
         }
         timeOutCount++;
