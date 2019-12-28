@@ -293,10 +293,11 @@ int main(int argc, char **argv) {
     ros::param::get("finish_construction", finished);
     if (finished) {
       current_state = Patrol;
+      ROS_INFO("Construction --> Patrol");
     }
 
     switch (current_state) {
-      Patrol:
+      case Patrol:
         // random move around;
         if (timeOutCount > 50) {
           actionlib_msgs::GoalID temp;
@@ -312,7 +313,7 @@ int main(int argc, char **argv) {
           go_to_target.publish(message);
         }
         timeOutCount++;
-      WaitForReplyWhilePatrol:
+      case WaitForReplyWhilePatrol:
         if (timeOutCount > 50) {
           timeOutCount = 0;
           current_state = Patrol;
@@ -328,7 +329,7 @@ int main(int argc, char **argv) {
           } 
         }
         timeOutCount++;
-      HelpingWhileWaitForPerson:
+      case HelpingWhileWaitForPerson:
         if (timeOutCount > 50) {
           timeOutCount = 0;
           lost_user[current_wait_user.id] = current_wait_user;
@@ -339,7 +340,7 @@ int main(int argc, char **argv) {
           tts("stay_close");
         }
         timeOutCount++;
-      GuidingWhileWaitForPerson:
+      case GuidingWhileWaitForPerson:
         if (timeOutCount > 50) {
           timeOutCount = 0;
           lost_user[current_wait_user.id] = current_wait_user;
