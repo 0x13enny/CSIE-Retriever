@@ -74,8 +74,8 @@ void find_plan() {
   ;
 }
 
-void reach_target(const actionlib_msgs::GoalStatusArray::ConstPtr& msg) {
-  if (msg->status_list[0].status == 3 && (msg->status_list[0].text != "Goal reached.")) {
+void reach_target(const move_base_msgs::MoveBaseActionResult::ConstPtr& msg) {
+  if (msg->status.status == 3 && (msg->status.text != "Goal reached.")) {
     arrived = true;
   }
 }
