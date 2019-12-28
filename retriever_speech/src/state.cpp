@@ -303,11 +303,11 @@ int main(int argc, char **argv) {
     switch (current_state) {
       case Patrol:
         // random move around;
-        if (timeOutCount > 1250) {
+        if (timeOutCount > 750) {
           actionlib_msgs::GoalID temp;
           cancel.publish(temp);
         } 
-        if (timeOutCount == 1375) {
+        if (timeOutCount == 950) {
           move_base_msgs::MoveBaseActionGoal message;
           message.goal.target_pose.pose.position.x = current_pose.x + (double) 0.5* rand() / (RAND_MAX + 1.0);
           message.goal.target_pose.pose.position.y = current_pose.y + (double) 0.5* rand() / (RAND_MAX + 1.0);
