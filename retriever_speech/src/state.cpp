@@ -64,7 +64,7 @@ ros::Publisher go_to_target;
 ros::Publisher cancel;
 
 void tts(string& s) {
-  string cmd = "play -v 10 " + s + ".mp3";
+  string cmd = "play -v 10 /home/benny/Documents/retriever_ws/src/CSIE-Retriever/voice/" + s + ".mp3";
   system(cmd.c_str());
 }
 
