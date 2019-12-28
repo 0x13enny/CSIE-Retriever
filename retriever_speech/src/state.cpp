@@ -53,6 +53,7 @@ typedef struct {
 // public variable;
 int current_state = MapConstruction;
 int timeOutCount = 0;
+bool arrived = false;
 P current_pose;
 P current_target;
 U current_wait_user;
@@ -73,15 +74,10 @@ void find_plan() {
   ;
 }
 
-bool reach_target() {
-  double distance = abs(current_pose.x - current_target.x) + 
-                    abs(current_pose.y - current_target.y) +
-                    abs(current_pose.rx - current_target.rx) +
-                    abs(current_pose.ry - current_target.ry);
-  if (distance < .001) {
-    return true;
+void reach_target(const actionlib_msgs::GoalStatusArray::ConstPtr& msg) {
+  if (msg->status_list[0].status == 3 && (msg->status_list[0].text != "Goal reached.")) {
+    arrived = true;
   }
-  return false;
 }
 
 /*
@@ -218,7 +214,7 @@ void helping_people(const retriever_speech::user_info::ConstPtr& msg) {
       return;
     }
 
-    if (reach_target()) {
+    if (arrived) {
       if (current_user.target == bathroom) {
         tts("bathroom");
       } else if (current_user.target == stairs) {
@@ -229,7 +225,8 @@ void helping_people(const retriever_speech::user_info::ConstPtr& msg) {
       ROS_INFO("reach the target: HelpPeople --> Patrol");
       current_state = Patrol;
       actionlib_msgs::GoalID temp;
-      cancel.publish(temp);    
+      cancel.publish(temp);
+      arrived = false;    
       return;
     }
   }
@@ -287,7 +284,8 @@ int main(int argc, char **argv) {
   ros::Subscriber sub4 = n.subscribe("/last_see_people", 1000, wait_helping_people);
   ros::Subscriber sub6 = n.subscribe("/hear_find_target_Callback", 1000, hear_find_target_Callback);
   ros::Subscriber sub7 = n.subscribe("/listen_to_people", 1000, listen_to_people);
-  
+  ros::Subscriber sub8 = n.subscribe("/move_base/result", 1000, reach_target);
+
   while (ros::ok()) {
 //    ROS_INFO("here");
     loop_rate.sleep();
