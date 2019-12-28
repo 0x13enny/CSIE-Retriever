@@ -320,13 +320,13 @@ int main(int argc, char **argv) {
         timeOutCount++;
         break;
       case WaitForReplyWhilePatrol:
-        if (timeOutCount > 500) {
+        if (timeOutCount > 1000) {
           ROS_INFO("Timeout, Not replying, WaitForReplyWhilePatrol -> Patrol");
           timeOutCount = 0;
           current_state = Patrol;
           break;
         }
-        if (timeOutCount % 200 == 0) {
+        if (timeOutCount % 100 == 0) {
           if (current_wait_user.target == bathroom) {
             tts("resume_bathroom");
           } else if (current_wait_user.target == stairs) {
@@ -338,29 +338,28 @@ int main(int argc, char **argv) {
         timeOutCount++;
         break;
       case HelpingWhileWaitForPerson:
-        if (timeOutCount > 500) {
+        if (timeOutCount > 1000) {
           ROS_INFO("Timeout, Person lost, HelpingWhileWaitForPerson --> Patrol");
+          ROS_INFO("add lost user %d %d",current_wait_user.id, current_wait_user.target);
           timeOutCount = 0;
           lost_user[current_wait_user.id] = current_wait_user;
           current_state = Patrol;
           break;
         }
-        if (timeOutCount % 200 == 0) {
+        if (timeOutCount % 100 == 0) {
           tts("stay_close");
         }
         timeOutCount++;
         break;
       case GuidingWhileWaitForPerson:
-        if (timeOutCount > 500) {
-	  
-	  ROS_INFO("add lost user %d %d",current_wait_user.id, current_wait_user.target);
-
+        if (timeOutCount > 1000) {
+	        ROS_INFO("add lost user %d %d",current_wait_user.id, current_wait_user.target);
           timeOutCount = 0;
           lost_user[current_wait_user.id] = current_wait_user;
           current_state = Patrol;
           break;
         }
-        if (timeOutCount % 200 == 0) {
+        if (timeOutCount % 100 == 0) {
           tts("stay_close");
         }
         timeOutCount++;
