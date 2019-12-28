@@ -3,6 +3,7 @@
 #include "move_base_msgs/MoveBaseActionGoal.h"
 #include "nav_msgs/Odometry.h"
 #include "actionlib_msgs/GoalID.h"
+#include "actionlib_msgs/GoalStatusArray.h"
 #include "retriever_speech/user_info.h"
 #include <time.h> 
 #include <chrono>
@@ -71,8 +72,8 @@ void find_plan() {
   ;
 }
 
-void reach_target(const move_base_msgs::MoveBaseActionGoal::ConstPtr& msg) {
-  if (msg->status.status == 3 && !strcmp(msg->status.text.c_str(), "Goal reached.")) {
+void reach_target(const actionlib_msgs::GoalStatusArray::ConstPtr& msg) {
+  if (msg->status_list[0].status == 3 && (msg->status_list[0].text!="Goal reached.")) {
     arrived = true;
   }
 }
