@@ -71,8 +71,10 @@ void find_plan() {
   ;
 }
 
-void reach_target() {
-  arrived = true;
+void reach_target(const move_base_msgs::MoveBaseActionGoal::ConstPtr& msg) {
+  if (msg->status.status == 3 && !strcmp(msg->status.text.c_str(), "Goal reached.")) {
+    arrived = true;
+  }
 }
 
 /*
