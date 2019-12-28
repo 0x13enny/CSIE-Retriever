@@ -1,5 +1,9 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
+#include "move_base_msgs/MoveBaseActionGoal.h"
+#include "nav_msgs/Odometry.h"
+#include "actionlib_msgs/GoalID.h"
+#include "retriever_speech/user_info.h"
 #include <time.h> 
 #include <chrono>
 #include <sstream>
@@ -7,10 +11,6 @@
 #include <vector>
 #include <string>
 #include <math.h>
-#include "move_base_msgs/MoveBaseActionGoal.h"
-#include "nav_msgs/Odometry.h"
-#include "actionlib_msgs/GoalID.h"
-#include "retriever_speech/user_info.h"
 #define THRESHOLD 10000
 
 using namespace std;
@@ -87,16 +87,16 @@ bool reach_target() {
 void hear_current_pose(const nav_msgs::Odometry::ConstPtr& msg) {
   if (current_state == HelpPeople || current_state == GuidePeople 
     || current_state == WaitForReplyWhilePatrol) return;
-  current_pose.x = msg.pose.pose.position.x;
-  current_pose.y = msg.pose.pose.position.y;
-  current_pose.rx = msg.pose.pose.orientation.z;
-  current_pose.ry = msg.pose.pose.orientation.w;
+  current_pose.x = msg->pose.pose.position.x;
+  current_pose.y = msg->pose.pose.position.y;
+  current_pose.rx = msg->pose.pose.orientation.z;
+  current_pose.ry = msg->pose.pose.orientation.w;
 }
 
 // keep track of person saw
 void last_see_people(const retriever_speech::user_info::ConstPtr& msg) {
-  current_user.id = msg.user_id;
-  current_user.face = msg.face_area;
+  current_user.id = msg->user_id;
+  current_user.face = msg->face_area;
 }
 
 /*
@@ -215,7 +215,7 @@ void listen_to_people(const std_msgs::String::ConstPtr& msg) {
 
 void helping_people(const retriever_speech::user_info::ConstPtr& msg) {
   if (current_state == GuidePeople) {
-    if (msg.face_area < THRESHOLD) {
+    if (msg->face_area < THRESHOLD) {
       current_state = HelpingWhileWaitForPerson;
       current_wait_user = current_user;
       actionlib_msgs::GoalID temp;
@@ -238,7 +238,7 @@ void helping_people(const retriever_speech::user_info::ConstPtr& msg) {
  */
 
 void wait_helping_people(const retriever_speech::user_info::ConstPtr& msg) {
-  if (msg.face_area > THRESHOLD && msg.user_id == current_wait_user.id) {
+  if (msg->face_area > THRESHOLD && msg->user_id == current_wait_user.id) {
     current_state = HelpPeople;
     timeOutCount = 0;
     auto tmp = targetMap.find(current_user.target);
@@ -315,7 +315,7 @@ int main(int argc, char **argv) {
           break;
         }
         if (timeOutCount % 20 == 0) {
-          tts("Are you going to ?");
+          tts("You are the guy lost before, do you want to keep going?");
         }
         timeOutCount++;
       HelpingWhileWaitForPerson:
@@ -326,7 +326,7 @@ int main(int argc, char **argv) {
           break;
         }
         if (timeOutCount % 10 == 0) {
-          tts("You still there ?");
+          tts("Hello? stay behind me!!!");
         }
         timeOutCount++;
       GuidingWhileWaitForPerson:
@@ -337,7 +337,7 @@ int main(int argc, char **argv) {
           break;
         }
         if (timeOutCount % 10 == 0) {
-          tts("You still there ?");
+          tts("Hello? stay behind me!!!");
         }
         timeOutCount++;
       default:
