@@ -110,7 +110,7 @@ void hear_current_pose(const nav_msgs::Odometry::ConstPtr& msg) {
 void last_see_people(const retriever_speech::user_info::ConstPtr& msg) {
   current_user.id = msg->user_id;
   current_user.face = msg->face_area;
-  ROS_INFO("detect user: %lf, area: %lf", current_user.id, current_user.face);
+  ROS_INFO("detect user: %d, area: %d", current_user.id, current_user.face);
 }
 
 /*
