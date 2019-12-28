@@ -59,7 +59,6 @@ U current_user;
 map<int, U> lost_user; 
 map<Place, P> targetMap;
 //vector<P> route;
-ros::NodeHandle n;
 ros::Publisher go_to_target;
 ros::Publisher cancel;
 
@@ -258,6 +257,7 @@ void wait_helping_people(const retriever_speech::user_info::ConstPtr& msg) {
 
 int main(int argc, char **argv) {
   ros::init(argc, argv, "state");
+  ros::NodeHandle n;
 
   srand( time(NULL) );
 

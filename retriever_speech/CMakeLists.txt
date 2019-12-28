@@ -8,8 +8,12 @@ project(retriever_speech)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED
+  roscpp
   move_base
   std_msgs
+  move_base_msgs
+  nav_msgs
+  actionlib_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -104,7 +108,7 @@ catkin_python_setup()
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES retriever_speech
-#  CATKIN_DEPENDS other_catkin_pkg
+  CATKIN_DEPENDS roscpp std_msgs move_base_msgs nav_msgs actionlib_msgs
 #  DEPENDS system_lib
 )
 
@@ -187,11 +191,12 @@ target_link_libraries(state
 # )
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
-# install(FILES
+ install(
 #   # myfile1
 #   # myfile2
-#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-# )
+   TARGETS state
+   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+ )
 
 #############
 ## Testing ##
