@@ -63,7 +63,7 @@ map<Place, P> targetMap;
 ros::Publisher go_to_target;
 ros::Publisher cancel;
 
-void tts(string& s) {
+void tts(const string& s) {
   string cmd = "play -v 10 /home/benny/Documents/retriever_ws/src/CSIE-Retriever/voice/" + s + ".mp3";
   system(cmd.c_str());
 }
@@ -77,7 +77,7 @@ bool reach_target() {
   double distance = abs(current_pose.x - current_target.x) + 
                     abs(current_pose.y - current_target.y) +
                     abs(current_pose.rx - current_target.rx) +
-                    abs(current_pose.ry - current_target.ry) +
+                    abs(current_pose.ry - current_target.ry);
   if (distance < .001) {
     return true;
   }
