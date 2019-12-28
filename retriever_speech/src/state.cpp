@@ -361,7 +361,7 @@ int main(int argc, char **argv) {
       default:
         break;
     }
-    ros::spin();
+//    ros::spin();
   }
 
   return 0;
