@@ -108,8 +108,9 @@ void hear_current_pose(const nav_msgs::Odometry::ConstPtr& msg) {
 
 // keep track of person saw
 void last_see_people(const retriever_speech::user_info::ConstPtr& msg) {
-  current_user.id = msg->user_id;
-  current_user.face = msg->face_area;
+  ROS_INFO("detect user: %d, area: %d", msg->user_id, msg->face_area);
+  current_user.id = (int)msg->user_id;
+  current_user.face = (int)msg->face_area;
   ROS_INFO("detect user: %d, area: %d", current_user.id, current_user.face);
 }
 
@@ -236,7 +237,7 @@ void helping_people(const retriever_speech::user_info::ConstPtr& msg) {
  */
 
 void wait_helping_people(const retriever_speech::user_info::ConstPtr& msg) {
-  if (msg->face_area > THRESHOLD && msg->user_id == current_wait_user.id) {
+  if (msg->face_area > THRESHOLD && msg->user_id == current_wait_user.id && current_state == HelpingWhileWaitForPerson) {
     current_state = HelpPeople;
     timeOutCount = 0;
     auto tmp = targetMap.find(current_user.target);
