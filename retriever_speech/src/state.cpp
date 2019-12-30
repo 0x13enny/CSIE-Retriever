@@ -341,7 +341,7 @@ int main(int argc, char **argv) {
         timeOutCount++;
         break;
       case HelpingWhileWaitForPerson:
-        if (timeOutCount > 150) {
+        if (timeOutCount > 300) {
           ROS_INFO("Timeout, Person lost, HelpingWhileWaitForPerson --> Patrol");
           ROS_INFO("add lost user %d %d", current_wait_user.id, current_wait_user.target);
           timeOutCount = 0;
@@ -349,20 +349,20 @@ int main(int argc, char **argv) {
           current_state = Patrol;
           break;
         }
-        if (timeOutCount % 50 == 0) {
+        if (timeOutCount % 100 == 0) {
           tts("stay_close");
         }
         timeOutCount++;
         break;
       case GuidingWhileWaitForPerson:
-        if (timeOutCount > 150) {
+        if (timeOutCount > 300) {
 	        ROS_INFO("add lost user %d %d",current_wait_user.id, current_wait_user.target);
           timeOutCount = 0;
           lost_user[current_wait_user.id] = current_wait_user;
           current_state = Patrol;
           break;
         }
-        if (timeOutCount % 50 == 0) {
+        if (timeOutCount % 100 == 0) {
           tts("stay_close");
         }
         timeOutCount++;
