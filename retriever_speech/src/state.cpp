@@ -137,7 +137,7 @@ void hear_find_target_Callback(const std_msgs::String::ConstPtr& msg) {
 
 void has_face(const retriever_speech::user_info::ConstPtr& msg) {
   if (current_state == Patrol && (msg->face_area > THRESHOLD)) {
-    ROS_INFO("lost hear voice: face > THRESHOLD");
+  //  ROS_INFO("lost hear voice: face > THRESHOLD");
     // check if person is lost
     U user;
     auto tmp = lost_user.find(current_user.id);
@@ -157,16 +157,12 @@ void has_face(const retriever_speech::user_info::ConstPtr& msg) {
 
 void listen_to_people(const std_msgs::String::ConstPtr& msg) {
   if (current_state == WaitForReplyWhilePatrol) {
-    if (!strcmp(msg->data.c_str(), "yes")) {
+    if (!strcmp(msg->data.c_str(), "yesss")) {
       ROS_INFO("lost person reply yes");
-      if (current_wait_user.target == guide) {
-        current_state = GuidePeople;
-      } else {
-        current_state = HelpPeople;
-      }
+      current_state = HelpPeople;
       lost_user.erase(current_wait_user.id);
       timeOutCount = 0;
-    } else if (!strcmp(msg->data.c_str(), "no")) {
+    } else if (!strcmp(msg->data.c_str(), "noooo")) {
       ROS_INFO("lost person reply no");
       lost_user.erase(current_wait_user.id);
       current_state = Patrol;
